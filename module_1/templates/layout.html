@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Name - Portfolio</title>
+    <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <!-- This logic checks which page is active and applies the 'active' class -->
+                <li><a href="{{ url_for('home') }}" class="{{ 'active' if active_page == 'home' else '' }}">About</a></li>
+                <li><a href="{{ url_for('projects') }}" class="{{ 'active' if active_page == 'projects' else '' }}">Projects</a></li>
+                <li><a href="{{ url_for('contact') }}" class="{{ 'active' if active_page == 'contact' else '' }}">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- The content for each specific page will be injected here -->
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

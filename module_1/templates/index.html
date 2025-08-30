@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="home-section">
+    <h1>Jae Kwon</h1>
+    <h3>Tech Artist & Student at Johns Hopkins University</h3>
+
+    <div class="bio-container">
+        <div class="bio-text">
+            <h4>About Me</h4>
+            <p>
+                This is where your biography will go. Write a few sentences about your background,
+                your interests, and what you are passionate about. This will give visitors a
+                good first impression of who you are.
+            </p>
+        </div>
+        <div class="bio-image">
+            <img src="{{ url_for('static', filename='images/jaekwon_profile.jpg') }}" alt="A photo of Jae Kwon">
+        </div>
+    </div>
+</section>
+{% endblock %}
