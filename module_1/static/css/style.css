@@ -7,12 +7,12 @@ background-color: #f4f4f4;
 color: #333;
 }
 
-/* Header and Navigation Bar /
+/* Header and Navigation Bar */
 header {
 background-color: #333;
 color: #fff;
 padding: 1rem 0;
-text-align: right; / Aligns nav to the top right */
+text-align: left; /* Aligns nav to the top right */
 }
 
 nav ul {
@@ -27,7 +27,7 @@ margin-left: 20px;
 }
 
 nav a {
-color: #000000;
+color: #ffffff;
 text-decoration: none;
 padding: 5px 10px;
 border-radius: 5px;
@@ -35,9 +35,9 @@ border-radius: 5px;
 
 /* Style for the highlighted/active navigation tab /
 nav a.active {
-background-color: #55aaff; / A highlight color */
+background-color: #55aaff; / A highlight color 
 color: #fff;
-}
+}*/
 
 nav a:hover {
 background-color: #555;
@@ -54,8 +54,8 @@ margin: auto;
 .bio-container {
 display: flex; / This enables flexbox for side-by-side layout /
 align-items: center;
-gap: 20px; / Adds space between the text and image */
-}
+gap: 20px; / Adds space between the text and image 
+}*/
 
 .bio-text {
 flex: 2; /* Takes up 2/3 of the space */
