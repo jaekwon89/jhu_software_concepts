@@ -7,16 +7,15 @@ app = Flask(__name__)
 def home():
     return render_template('index.html', active_page='home')
 
-# Route for the contact page ('/contact')
-@app.route('/contact')
-def contact():
-    return render_template('contact.html', active_page='contact')
-
 # Route for the projects page ('/projects')
 @app.route('/projects')
 def projects():
     return render_template('projects.html', active_page='projects')
 
+# Route for the contact page ('/contact')
+@app.route('/contact')
+def contact():
+    return render_template('contact.html', active_page='contact')
 
 if __name__ == '__main__':
     # The app runs on localhost at port 8080, as required
