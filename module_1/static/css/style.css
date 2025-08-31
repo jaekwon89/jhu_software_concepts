@@ -1,36 +1,36 @@
 /* General Body Styles */
 body {
-font-family: Arial, sans-serif;
-margin: 0;
-padding: 0;
-background-color: #f4f4f4;
-color: #333;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
 }
 
 /* Header and Navigation Bar */
 header {
-background-color: #333;
-color: #fff;
-padding: 1rem 0;
-text-align: left; /* Aligns nav to the top right */
+    background-color: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: right; /* Aligns nav to the top right */
 }
 
 nav ul {
-list-style: none;
-margin: 0;
-padding-right: 20px;
+    list-style: none;
+    margin: 0;
+    padding-right: 20px;
 }
 
 nav ul li {
-display: inline;
-margin-left: 20px;
+    display: inline;
+    margin-left: 20px;
 }
 
 nav a {
-color: #ffffff;
-text-decoration: none;
-padding: 5px 10px;
-border-radius: 5px;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
 }
 
 /* Style for the highlighted/active navigation tab /
@@ -40,63 +40,56 @@ color: #fff;
 }*/
 
 nav a:hover {
-background-color: #555;
+    background-color: #555;
 }
 
 /* Main Content Area */
 main {
-padding: 20px;
-max-width: 900px;
-margin: auto;
+    padding: 20px;
+    max-width: 1000px;
+    margin: auto;
 }
 
-/* Homepage Bio Section /
-.bio-container {
-display: flex; / This enables flexbox for side-by-side layout /
-align-items: center;
-gap: 20px; / Adds space between the text and image 
-}*/
-
 .bio-text {
-flex: 2; /* Takes up 2/3 of the space */
+    flex: 2; /* Takes up 2/3 of the space */
 }
 
 .bio-image {
-flex: 1; /* Takes up 1/3 of the space */
+    flex: 1; /* Takes up 1/3 of the space */
 }
 
 .bio-image img {
-max-width: 300px; /* This sets the maximum width of the image to 300px /
-width: 100%;      / This makes the image responsive within its container /
-height: auto;     / This maintains the photo's aspect ratio /
-border-radius: 10px; / Adds rounded corners to the image /
-display: block;   / Helps with alignment /
-margin: auto;     / Centers the image in its container */
+    max-width: 300px; /* This sets the maximum width of the image to 300px */
+    width: 100%;      /* This makes the image responsive within its container */
+    height: auto;     /* This maintains the photo's aspect ratio */
+    border-radius: 10px; /* Adds rounded corners to the image */
+    margin-top: 40px;
 }
 
 /* Contact Section Styling */
 .bio-container {
-background-color: #ffffff;
-border: 1px solid #ddd;
-padding: 15px;
-margin-bottom: 15px;
-border-radius: 8px;
+    display: flex;
+    gap: 20px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
 }
 
 /* Projects Section Styling */
 .project {
-background-color: #ffffff;
-border: 1px solid #ddd;
-padding: 15px;
-margin-bottom: 15px;
-border-radius: 8px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
 }
 
 /* Contact Section Styling */
 .contact {
-background-color: #ffffff;
-border: 1px solid #ddd;
-padding: 15px;
-margin-bottom: 15px;
-border-radius: 8px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
 }
