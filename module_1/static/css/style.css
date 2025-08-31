@@ -15,17 +15,20 @@ header {
     text-align: right; /* Aligns nav to the top right */
 }
 
+/* Location of the tabs in the navigation bar */
 nav ul {
     list-style: none;
     margin: 0;
-    padding-right: 20px;
+    padding-right: 50px;
 }
 
+/* A space between tabs in the navigation bar */
 nav ul li {
     display: inline;
     margin-left: 20px;
 }
 
+/* Style for the navigation tab */
 nav a {
     color: #ffffff;
     text-decoration: none;
@@ -33,11 +36,11 @@ nav a {
     border-radius: 5px;
 }
 
-/* Style for the highlighted/active navigation tab /
+/* Style for the highlighted/active navigation tab */
 nav a.active {
-background-color: #55aaff; / A highlight color 
-color: #fff;
-}*/
+background-color: #55aaff;
+color: #ffffff;
+}
 
 nav a:hover {
     background-color: #555;
@@ -59,10 +62,10 @@ main {
 }
 
 .bio-image img {
-    max-width: 300px; /* This sets the maximum width of the image to 300px */
-    width: 100%;      /* This makes the image responsive within its container */
-    height: auto;     /* This maintains the photo's aspect ratio */
-    border-radius: 10px; /* Adds rounded corners to the image */
+    max-width: 300px;
+    width: 100%;      
+    height: auto;     
+    border-radius: 10px; 
     margin-top: 40px;
 }
 
