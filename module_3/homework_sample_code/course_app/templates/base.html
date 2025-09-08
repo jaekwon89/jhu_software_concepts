@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset = "UTF-8" />
+  <title>JHU Course List</title>
+  <style>
+    nav a{
+      color: #607d8b;
+      font-size: em;
+      margin-left: 50px;
+      text-decoration: none;
+    }
+
+    .course{
+      padding: 20px;
+      margin: 10px;
+      background-color: #f7f4f4;
+    }
+    
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="{{ url_for('index') }}">JHU Course List</a>
+    <a href="{{ url_for('create') }}">Add New Course</a>
+  </nav>
+  <hr>
+  <div class= "content">
+    {% block content %} {% endblock %}
+  </div>
+</body>
+</html>
