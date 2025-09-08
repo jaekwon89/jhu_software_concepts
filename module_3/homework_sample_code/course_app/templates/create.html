@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>{% block title %} Add a New Course {% endblock %}</h1>
+  <form method="post">
+    <p>
+      <label for="id">Course ID</label>
+      <input type="number" name = "id" placeholder="CourseID"
+      </input>
+    </p>
+    <p>
+      <label for="name">Name</label>
+      <input type="text" name = "name" placeholder="Course Name">
+        </input>
+    </p>
+    <p>
+      <label for="instructor">Instructor</label>
+      <input type="text" name = "instructor" placeholder="Instructor">
+        </input>
+    </p>
+    <p>
+      <label for="room">Classroom Number</label>
+      <input type="number" name = "room_number" placeholder="Course Room Number">
+        </input>
+    </p>
+    <p>
+      <button type="submit">Submit</button>
+    </p>
+  </form>
+{% endblock %}
