@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>{% block title %} JHU Registered Courses {% endblock %}</h1>
+  {% for course in courses %}
+    <div class='course'>
+      <p>Course ID: {{ course.0 }} </p>
+      <p>Course Name: {{ course.1 }}</p>
+      <p>Course Instructor: {{ course.2 }}</p>
+    </div>
+  {% endfor %}
+{% endblock %}
+
+
+      
