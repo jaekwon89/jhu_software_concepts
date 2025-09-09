@@ -11,10 +11,9 @@
     <header>
         <nav>
             <ul>
-                <!-- This logic checks which page is active and applies the 'active' class -->
-                <li><a href="{{ url_for('home') }}" class="{{ 'active' if active_page == 'home' else '' }}">About</a></li>
-                <li><a href="{{ url_for('projects') }}" class="{{ 'active' if active_page == 'projects' else '' }}">Projects</a></li>
-                <li><a href="{{ url_for('contact') }}" class="{{ 'active' if active_page == 'contact' else '' }}">Contact</a></li>
+                <li><a href="{{ url_for('pages.home') }}" class="{{ 'active' if active_page == 'home' else '' }}">About</a></li>
+                <li><a href="{{ url_for('pages.projects') }}" class="{{ 'active' if active_page == 'projects' else '' }}">Projects</a></li>
+                <li><a href="{{ url_for('pages.contact') }}" class="{{ 'active' if active_page == 'contact' else '' }}">Contact</a></li>
             </ul>
         </nav>
     </header>
