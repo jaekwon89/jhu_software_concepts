@@ -11,9 +11,21 @@
     <header>
         <nav>
             <ul>
-                <li><a href="{{ url_for('pages.home') }}" class="{{ 'active' if active_page == 'home' else '' }}">About</a></li>
-                <li><a href="{{ url_for('pages.projects') }}" class="{{ 'active' if active_page == 'projects' else '' }}">Projects</a></li>
-                <li><a href="{{ url_for('pages.contact') }}" class="{{ 'active' if active_page == 'contact' else '' }}">Contact</a></li>
+                <li>
+                    <a href="{{ url_for('pages.home') }}" 
+                       class="{{ 'active' if active_page == 'home' else '' }}">About
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('pages.projects') }}" 
+                       class="{{ 'active' if active_page == 'projects' else '' }}">Projects
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('pages.contact') }}" 
+                       class="{{ 'active' if active_page == 'contact' else '' }}">Contact
+                    </a>
+                </li>
             </ul>
         </nav>
     </header>
