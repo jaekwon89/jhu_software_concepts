@@ -8,8 +8,4 @@ def create_app():
     from .pages import pages_bp
     app.register_blueprint(pages_bp)
 
-    with app.app_context():
-        print(app.url_map)
-
-
     return app
