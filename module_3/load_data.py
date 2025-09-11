@@ -1,10 +1,10 @@
-import json, math
-
+import os, json, math
 import psycopg_pool
 import psycopg
 from datetime import datetime
 
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/gradcafe"
+# Configuration
+DSN = os.getenv("PG_DSN", "postgresql://postgres:postgres@localhost:5432/gradcafe")
 JSON_PATH = "../module_2/llm_extend_applicant_data.json"
 
 # ---------------------------------------------------------------------
@@ -19,10 +19,10 @@ def load_json(path=JSON_PATH):
 # Date Normailzation
 # ---------------------------------------------------------------------
 def norm_str(value):
-    if value in(None, ""):
+    if value is None:
         return ""
     else:
-        return ""
+        return str(value).strip()
 
 # ---------------------------------------------------------------------
 # Date format
@@ -38,11 +38,11 @@ def to_date(added_date):
         return ""
 
 # ---------------------------------------------------------------------
-# GPA format
+# Float format for scores
 # ---------------------------------------------------------------------
 def to_float(score):
-    if score in (None, ""):
-        return ""
+    if score is None or score == "":
+        return None
     
     score_s = str(score).replace("GPA", "").strip()
     try:
@@ -50,9 +50,9 @@ def to_float(score):
         if math.isfinite(score_f):
             return score_f
         else:
-            return ""
+            return None
     except Exception:
-        return ""
+        return None
 
 # ---------------------------------------------------------------------
 # Data Type SETUP
@@ -102,10 +102,28 @@ def ensure_table(conn):
         cur.execute(ddl)
 
 def main():
-    data = load_json()
+    data = load_json()  # Load JSON
 
-    pool = psycopg_pool.ConnectionPool(DATABASE_URL, min_size=1, max_size=5)
+    pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)
 
+    with pool.connection() as conn:
+        ensure_table(conn)
+        with conn.cursor() as cur:
+            copy_sql = """
+                COPY applicants (
+                    program, comments, date_added, url, status, term,
+                    us_or_international, gpa, gre, gre_v, gre_aw, degree,
+                    llm_generated_program, llm_generated_university
+                ) FROM STDIN
+            """
+            with cur.copy(copy_sql) as cp:
+                for r in data:
+                    cp.write_row(rowify(r))
+        conn.commit()
 
+    print(f"Done. Loaded {len(data)} rows")
+
+if __name__ == "__main__":
+    main()
     
 
