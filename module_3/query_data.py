@@ -23,48 +23,44 @@ def count_fall_2025():
 
 # ---------------------------------------------------------------------
 # 2. Percent International
-# A percentage of entries from international students
+# A percentage of entries from international students 
+# Getting a count for each feature value
 # ---------------------------------------------------------------------
-def n_international():
+def percent_international():
     with pool.connection() as conn:
-        with conn.cursor() as cur:      
+        with conn.cursor() as cur:
+            # A count for 'International'
             cur.execute("""
                 SELECT COUNT(*)
                 FROM applicants
                 WHERE us_or_international = 'International'
             """)
             international_count = cur.fetchone()[0]
-    return international_count
 
-def n_us():
-    with pool.connection() as conn:
-        with conn.cursor() as cur:      
+            # A count for 'American'
             cur.execute("""
                 SELECT COUNT(*)
                 FROM applicants
                 WHERE us_or_international = 'American'
             """)
             us_count = cur.fetchone()[0]
-    return us_count
 
-def n_other():
-    with pool.connection() as conn:
-        with conn.cursor() as cur:      
+            # A coutn for NOT 'International' and 'American'
             cur.execute("""
                 SELECT COUNT(*)
                 FROM applicants
                 WHERE us_or_international NOT IN ('International', 'American')
             """)
             other_count = cur.fetchone()[0]
-    return other_count
+
+    return international_count, us_count, other_count
+
 
 
 
 def main():
     q1 = count_fall_2025()
-    q2_1 = n_international()
-    q2_2 = n_us()
-    q2_3 = n_other()
+    q2_1, q2_2, q2_3 = percent_international()
     q2_4 = q2_1 / (q2_1 + q2_2 + q2_3) * 100
 
     print(f"Applicant count: {q1}")
