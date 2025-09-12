@@ -16,7 +16,8 @@ def load_json(path=JSON_PATH):
     return data
 
 # ---------------------------------------------------------------------
-# Date Normailzation
+# Data Type: TEXT 
+# Normalize string format
 # ---------------------------------------------------------------------
 def norm_str(value):
     if value is None:
@@ -25,6 +26,7 @@ def norm_str(value):
         return str(value).strip()
 
 # ---------------------------------------------------------------------
+# Data Type: DATE
 # Date format
 # ---------------------------------------------------------------------
 def to_date(added_date):
@@ -38,6 +40,7 @@ def to_date(added_date):
         return ""
 
 # ---------------------------------------------------------------------
+# Date Type: FLOAT
 # Float format for scores
 # ---------------------------------------------------------------------
 def to_float(score):
@@ -57,22 +60,22 @@ def to_float(score):
 # ---------------------------------------------------------------------
 # Data Type SETUP
 # ---------------------------------------------------------------------
-def rowify(src: dict):
+def data_type(data: dict):
     return [
-        norm_str(src.get("program")),
-        norm_str(src.get("comments")),
-        to_date(src.get("date_added")),
-        norm_str(src.get("url")),
-        norm_str(src.get("status")),
-        norm_str(src.get("term")),
-        norm_str(src.get("US/International")),
-        to_float(src.get("GPA")),
-        to_float(src.get("GRE")),
-        to_float(src.get("GRE_V")),
-        to_float(src.get("GRE_AW")),
-        norm_str(src.get("Degree")),
-        norm_str(src.get("llm-generated-program")),
-        norm_str(src.get("llm-generated-university")),
+        norm_str(data.get("program")),
+        norm_str(data.get("comments")),
+        to_date(data.get("date_added")),
+        norm_str(data.get("url")),
+        norm_str(data.get("status")),
+        norm_str(data.get("term")),
+        norm_str(data.get("US/International")),
+        to_float(data.get("GPA")),
+        to_float(data.get("GRE")),
+        to_float(data.get("GRE_V")),
+        to_float(data.get("GRE_AW")),
+        norm_str(data.get("Degree")),
+        norm_str(data.get("llm-generated-program")),
+        norm_str(data.get("llm-generated-university")),
     ]
 
 def main():
@@ -89,9 +92,9 @@ def main():
                     llm_generated_program, llm_generated_university
                 ) FROM STDIN
             """
-            with cur.copy(copy_sql) as cp:
+            with cur.copy(copy_sql) as cp:  # Faster than using INSERT
                 for r in data:
-                    cp.write_row(rowify(r))
+                    cp.write_row(data_type(r))
         conn.commit()
 
     print(f"Done. Loaded {len(data)} rows")
