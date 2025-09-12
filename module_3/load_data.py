@@ -58,6 +58,33 @@ def to_float(score):
         return None
 
 # ---------------------------------------------------------------------
+# Table Creation 
+# Create table if not exists
+# ---------------------------------------------------------------------
+def ensure_table(conn):
+    ddl = """
+    CREATE TABLE IF NOT EXISTS applicants(
+      p_id SERIAL PRIMARY KEY,
+      program TEXT,
+      comments TEXT,
+      date_added DATE,
+      url TEXT,
+      status TEXT,
+      term TEXT,
+      us_or_international TEXT,
+      gpa FLOAT,
+      gre FLOAT,
+      gre_v FLOAT,
+      gre_aw FLOAT,
+      degree TEXT,
+      llm_generated_program TEXT,
+      llm_generated_university TEXT
+    );
+    """
+    with conn.cursor() as cur:
+        cur.execute(ddl)
+
+# ---------------------------------------------------------------------
 # Data Type SETUP
 # ---------------------------------------------------------------------
 def data_type(data: dict):
@@ -84,6 +111,7 @@ def main():
     pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)
 
     with pool.connection() as conn:
+        ensure_table(conn)
         with conn.cursor() as cur:
             copy_sql = """
                 COPY applicants (
