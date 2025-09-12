@@ -70,36 +70,10 @@ def rowify(src: dict):
         to_float(src.get("GRE")),
         to_float(src.get("GRE_V")),
         to_float(src.get("GRE_AW")),
-        norm_str(src.get("Degree")),  # Changed data type to TEXT from float
+        norm_str(src.get("Degree")),
         norm_str(src.get("llm-generated-program")),
         norm_str(src.get("llm-generated-university")),
     ]
-
-# ---------------------------------------------------------------------
-# Table Creation
-# ---------------------------------------------------------------------
-def ensure_table(conn):
-    ddl = """
-    CREATE TABLE IF NOT EXISTS applicants(
-      p_id SERIAL PRIMARY KEY,
-      program TEXT,
-      comments TEXT,
-      date_added DATE,
-      url TEXT,
-      status TEXT,
-      term TEXT,
-      us_or_international TEXT,
-      gpa FLOAT,
-      gre FLOAT,
-      gre_v FLOAT,
-      gre_aw FLOAT,
-      degree TEXT,
-      llm_generated_program TEXT,
-      llm_generated_university TEXT
-    );
-    """  # Assignment determined degree as float - typo?
-    with conn.cursor() as cur:
-        cur.execute(ddl)
 
 def main():
     data = load_json()  # Load JSON
@@ -107,7 +81,6 @@ def main():
     pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)
 
     with pool.connection() as conn:
-        ensure_table(conn)
         with conn.cursor() as cur:
             copy_sql = """
                 COPY applicants (
