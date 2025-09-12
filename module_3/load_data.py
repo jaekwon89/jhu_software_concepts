@@ -1,10 +1,10 @@
-import os, json, math
+import json, math
 import psycopg_pool
 import psycopg
 from datetime import datetime
 
 # Configuration
-DSN = os.getenv("PG_DSN", "postgresql://postgres:postgres@localhost:5432/gradcafe")
+DSN = "postgresql://postgres:postgres@localhost:5432/gradcafe"
 JSON_PATH = "../module_2/llm_extend_applicant_data.json"
 
 # ---------------------------------------------------------------------
