@@ -1,14 +1,15 @@
 /* Base layout */
 .page-header {
-  border-bottom: 1px solid #e5e7eb;
-  background: #cfe4f0;
+  border-bottom: 2px solid #000000;
+  background: #def0fb;
   padding: 10px 4px;
   margin-bottom: 10px;
 }
 .page-header .brand {
   color: #2c3e50;
-  font-weight: 600;
+  font-weight: 1000;
   font-size: 14px;
+  margin: 1px 0 0 5px;
 }
 
 /* Title */
