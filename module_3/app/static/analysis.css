@@ -1,0 +1,64 @@
+/* Base layout */
+.page-header {
+  border-bottom: 1px solid #e5e7eb;
+  background: #cfe4f0;
+  padding: 10px 4px;
+  margin-bottom: 10px;
+}
+.page-header .brand {
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Title */
+.section-title {
+  font-size: 28px;
+  margin: 12px 0 16px;
+  color: #111827;
+}
+
+/* Cards */
+.qa-card {
+  background: #f8f7f7;
+  border: 3px solid #eee;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 14px 10px;
+}
+
+.qa-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.answer {
+  margin: 6px 0 6px;
+  font-style: italic;
+  color: #374151;
+}
+
+.answer span {
+  font-weight: 600;
+  font-style: normal;
+  color: #111827;
+  margin-right: 6px;
+}
+
+.bullets {
+  margin: 6px 0 0 18px;
+  color: #374151;
+}
+
+.bullets li {
+  margin: 4px 0;
+}
+
+/* Font */
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 16px;   /* adjust as needed */
+  line-height: 1.5;  /* improves readability */
+}
