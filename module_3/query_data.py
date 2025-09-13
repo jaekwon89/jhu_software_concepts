@@ -169,6 +169,45 @@ def count_gt_phd_aceept():
             result = cur.fetchone()[0]
     return result
 
+# ---------------------------------------------------------------------
+# 9. Acceptance rate by terms
+# From Spring 2025 to Fall 2025
+# ---------------------------------------------------------------------
+def acceptance_rate_by_terms():
+    with pool.connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    term,
+                    (COUNT(*) FILTER (WHERE status LIKE '%Accepted%')::numeric 
+                         / COUNT(*)::numeric * 100
+                    ) AS acceptance_rate
+                    FROM applicants
+                    WHERE term IN ('Spring 2025', 'Fall 2025')
+                    GROUP BY term
+                    ORDER BY term;
+            """)
+            results = cur.fetchall()
+    return results
+
+# ---------------------------------------------------------------------
+# 10. A number of each entry for each degree in 2025
+# ---------------------------------------------------------------------
+def degree_counts_2025():
+    with pool.connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    degree,
+                    COUNT(*) AS num_entries
+                    FROM applicants
+                    WHERE term LIKE '%2025%'
+                    GROUP BY degree
+                    ORDER BY num_entries DESC;
+            """)
+            results = cur.fetchall()
+    return results
+
 def main():
     # Q1
     q1 = count_fall_2025()
@@ -196,10 +235,11 @@ def main():
     # Q8
     q8 = count_gt_phd_aceept()
     
-
     # Q9: additional question1
+    q9 = acceptance_rate_by_terms()
 
     # Q10: additional question2
+    q10 = degree_counts_2025()
 
     print(f"Applicant count: {q1}")
     print(f"International count: {q2['international_count']}")
@@ -214,9 +254,15 @@ def main():
         )
     print(f"Average GPA American: {q4}")
     print(f"Acceptance rate: {q5:.2f}")
-    print(f"Acceptance percent: {q6}")
+    print(f"Average GPA for accpeted applicants in Fall 2025: {q6}")
     print(f"JHU Masters Computer Science count: {q7}")
     print(f"Accepted Georgetown PhD CS applicants in 2025: {q8}")
+    print("Acceptance rates by terms:")
+    for term, rate in q9:
+        print(f"\t{term}: {rate:.2f}%")
+    print("Entries by degree in 2025:")
+    for degree, num in q10:
+        print(f"\t{degree}: {num}")
 
 if __name__ == "__main__":
     main()
