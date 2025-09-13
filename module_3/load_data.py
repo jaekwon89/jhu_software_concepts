@@ -105,6 +105,9 @@ def data_type(data: dict):
         norm_str(data.get("llm-generated-university")),
     ]
 
+# ---------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------
 def main():
     data = load_json()  # Load JSON
 
