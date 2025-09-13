@@ -188,7 +188,7 @@ def top_5_programs():
                     llm_generated_program AS program,
                     COUNT(*) AS num_entries
                 FROM applicants
-                WHERE term LIK '%2025%'
+                WHERE term LIKE '%2025%'
                 GROUP BY llm_generated_program
                 ORDER BY num_entries DESC
                 LIMIT 5;
