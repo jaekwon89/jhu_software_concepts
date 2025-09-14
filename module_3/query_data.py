@@ -125,7 +125,7 @@ def avg_gpa_fall2025_acceptances():
             avg_gpa_fa2025_accept = cur.fetchone()[0]
     return avg_gpa_fa2025_accept
 
-# 7. Count: JHU Masters in Computer Science (accepted)
+# 7. Count: JHU Masters in Computer Science
 def count_jhu_masters_cs():
     with pool.connection() as conn:
         with conn.cursor() as cur:
@@ -135,8 +135,7 @@ def count_jhu_masters_cs():
                 FROM applicants
                 WHERE llm_generated_university = 'Johns Hopkins University'
                     AND llm_generated_program = 'Computer Science'
-                    AND degree = 'Masters'
-                    AND status LIKE '%Accepted%';
+                    AND degree = 'Masters';
                 """
             )
             result = cur.fetchone()[0]
