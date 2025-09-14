@@ -166,3 +166,42 @@ Routes
 4. POST /update-analysis
    - Update analysis with current data in the database.
 
+
+
+# pipeline.py
+
+Goal
+- Orchestrate the ETL: 
+  1. Skip existing
+  2. Scrape and clean
+  3. LLM normalize (llm_hosting)
+  4. Load to database
+  5. Report a short summary
+
+Function
+run_llm_hosting()
+1. Build the script path relative to this package.
+2. Execute as a subprocess: python app.py --file <in_path> --out <out_path>.
+3. On success: the LLM script writes out_path.
+4. On failure: Capture the error, log the error, and re-raise to abort.
+
+run_pipeline(): runs the entire ETL end to end process and returns counts and a message.
+1. Discover existing IDs: exising_rids()
+2. Scrape and clean: run_clean()
+3. LLM normalization: run_llm_hosting()
+4. Load to DB: read_json(), insert_records_by_url()
+
+logging: to see what was happening during compilation because I was running into frequent crashes.
+
+
+# static and templates: used llm to build.
+  - analysis.css
+  - analysis.html
+  - base.html
+
+
+
+
+
+
+
