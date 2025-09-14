@@ -8,6 +8,41 @@
 
 <h1 class="section-title">Analysis</h1>
 
+<div class="toolbar">
+
+  <div class="button-group">
+
+  <form action="{{ url_for('main.pull_data') }}" method="post">
+    <button type="submit" title="Scrape any NEW GradCafe results and add them to the database.">
+      Pull Data
+    </button>
+    <small class="help">
+      Scrapes only <strong>new</strong> entries and updates the DB.
+    </small>
+  </form>
+
+  <form action="{{ url_for('main.update_analysis') }}" method="post">
+    <button type="submit" title="Refresh the analysis using the latest data in the database.">
+      Update Analysis
+    </button>
+    <small class="help">
+      Refreshes the page with the latest data.
+    </small>
+  </form>
+
+  </div> 
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
 <section class="qa-card">
   <h3>How many entries do you have in your database who have applied for {{ term_label }}?</h3>
   <p class="answer"><span>Answer:</span> {{ data.q1_applicant_count }}</p>
