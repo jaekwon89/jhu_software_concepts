@@ -1,7 +1,9 @@
+# Had to spend much more time to learn and create the pipeline
+
 from __future__ import annotations
+import logging
 from pathlib import Path
 import subprocess, sys
-import logging
 
 from .db_helper import (
     existing_rids,
@@ -16,35 +18,28 @@ from load_data import data_type
 CLEAN_JSON = TMP_DIR / "new_applicant_data.json"
 FINAL_JSON = TMP_DIR / "llm_cleaned.json"
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
+# Call llm_hosting to do the cleaning process
 def run_llm_hosting(in_path: Path, out_path: Path) -> None:
-    """
-    Call your LLM hosting script to enrich/normalize the cleaned JSON.
-    """
+
     script = Path(__file__).resolve().parent / "llm_hosting" / "app.py"
     cmd = [sys.executable, str(script), "--file", str(in_path), "--out", str(out_path)]
     
     try:
         subprocess.run(cmd, check=True, capture_output=True, text=True)
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError as exc:
         # Log the error from the external script for easier debugging
-        logging.error(
-            f"LLM hosting script failed with exit code {e.returncode}:\n{e.stderr}"
+        logger.error(
+            "LLM hosting script failed with exit code %s:\n%s",
+            exc.returncode,
+            exc.stderr,
         )
         # Re-raise the exception to stop the pipeline
         raise
 
-
+# Run pipeline
 def run_pipeline(max_records: int = 5, delay: float = 0.5) -> dict:
-    """
-    Full pipeline:
-      - figure out existing rids in DB
-      - scrape+clean only NEW rows → CLEAN_JSON
-      - LLM-hosting second clean → FINAL_JSON
-      - load final JSON into DB (ON CONFLICT(url) DO NOTHING)
-    Returns a summary dict for UI/CLI.
-    """
     # 1. Skip what we already 'have'
     have = existing_rids()
 
