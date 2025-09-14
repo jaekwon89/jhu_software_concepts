@@ -1,0 +1,289 @@
+Accounting
+Acting
+Aerospace Engineering
+African American Studies
+African Studies
+Agricultural and Applied Economics
+Agricultural Economics
+Agricultural Engineering
+Agricultural Sciences
+American Studies
+Anatomy
+Ancient History
+Animal Science
+Anthropology
+Applied Economics
+Applied Linguistics
+Applied Mathematics
+Applied Physics
+Archaeology
+Architecture
+Art Education
+Art History
+Arts Administration
+Asian American Studies
+Asian Studies
+Astronomy
+Astrophysics
+Atmospheric Science
+Automation and Control
+Biochemistry
+Bioengineering
+Bioethics
+Bioinformatics
+Biological Anthropology
+Biological Sciences
+Biology
+Biomedical Engineering
+Biomedical Informatics
+Biomedical Sciences
+Biophysics
+Biostatistics
+Biotechnology
+Botany
+Business Administration
+Business Analytics
+Business Economics
+Chemical Engineering
+Chemical Physics
+Chemistry
+Child and Family Studies
+Chinese Studies
+Cinema and Media Studies
+Civil and Environmental Engineering
+Civil Engineering
+Classics
+Clinical Mental Health Counseling
+Clinical Psychology
+Cognitive Neuroscience
+Cognitive Science
+Communication
+Communication Disorders
+Communication Science
+Comparative Literature
+Computational Biology
+Computational Linguistics
+Computational Neuroscience
+Computational Science and Engineering
+Computer Engineering
+Computer Graphics
+Computer Science
+Computer Vision
+Conservation Biology
+Construction Management
+Counseling Psychology
+Creative Writing
+Criminal Justice
+Criminology
+Curriculum and Instruction
+Cybersecurity
+Data Analytics
+Data Science
+Demography
+Design
+Developmental Biology
+Developmental Psychology
+Digital Humanities
+Digital Media
+Discrete Mathematics
+Drama
+Earth and Environmental Sciences
+Earth Sciences
+Ecology
+Ecology and Evolutionary Biology
+Econometrics
+Economic Policy
+Economics
+Education
+Educational Leadership
+Educational Policy
+Educational Psychology
+Educational Technology
+Electrical and Computer Engineering
+Electrical Engineering
+Electronics and Communication Engineering
+Energy Systems
+Engineering Management
+English
+Entrepreneurship
+Environmental Engineering
+Environmental Health
+Environmental Policy
+Environmental Science
+Epidemiology
+Ethics
+Ethnic Studies
+European Studies
+Exercise Science
+Experimental Psychology
+Family and Consumer Sciences
+Fashion Design
+Film and Media Production
+Film and Media Studies
+Finance
+Financial Engineering
+Fine Arts
+Fisheries and Wildlife
+Food Science
+Forensic Psychology
+Forensic Science
+French Studies
+Game Design
+Game Development
+Gender and Women’s Studies
+Genetics
+Geographic Information Science
+Geographic Information Systems
+Geography
+Geology
+Geophysics
+German Studies
+Global Affairs
+Global Health
+Government
+Graphic Design
+Health Administration
+Health Informatics
+Health Policy
+Health Policy and Management
+Health Services Research
+Higher Education
+History
+Historic Preservation
+Hispanic Studies
+Hospitality Management
+Human Factors and Ergonomics
+Human-Computer Interaction
+Human Development and Family Studies
+Human Resources
+Industrial and Organizational Psychology
+Industrial Design
+Industrial Engineering
+Industrial Engineering and Operations Research
+Informatics
+Information Management
+Information Science
+Information Studies
+Information Systems
+Information Technology
+Instructional Design and Technology
+Intelligence Studies
+International Affairs
+International Business
+International Development
+International Relations
+Italian Studies
+Journalism
+Judaic Studies
+Landscape Architecture
+Latin American Studies
+Learning Sciences
+Linguistics
+Literary Studies
+Logic
+Management
+Management Information Systems
+Manufacturing Engineering
+Marine Biology
+Marine Science
+Marketing
+Materials Science
+Materials Science and Engineering
+Mathematical Finance
+Mathematical Sciences
+Mathematics
+Mechanical Engineering
+Mechatronics
+Media Studies
+Medical Physics
+Medicinal Chemistry
+Medieval Studies
+Microbiology
+Middle Eastern Studies
+Molecular and Cellular Biology
+Molecular Engineering
+Molecular Genetics
+Museum Studies
+Music
+Music Composition
+Music Education
+Music Performance
+Musicology
+Natural Resources
+Neuroscience
+Nuclear Engineering
+Nursing
+Nutrition
+Occupational Therapy
+Ocean Engineering
+Oceanography
+Operations Management
+Operations Research
+Optics and Photonics
+Paleontology
+Parks, Recreation, and Tourism Management
+Pharmaceutical Sciences
+Pharmacology
+Philosophy
+Photography
+Physical Therapy
+Physics
+Physiology
+Planetary Science
+Plant Biology
+Political Science
+Population Health
+Portuguese Studies
+Psychology
+Public Administration
+Public Affairs
+Public Health
+Public History
+Public Policy
+Public Policy Analysis
+Quantitative Finance
+Quantitative Methods
+Quantitative Psychology
+Real Estate
+Religious Studies
+Remote Sensing
+Renewable Energy Engineering
+Robotics
+Russian and East European Studies
+Science Education
+Scientific Computing
+Secondary Education
+Social Data Analytics
+Social Policy
+Social Psychology
+Social Work
+Sociology
+Software Engineering
+Spanish
+Special Education
+Speech and Hearing Science
+Speech-Language Pathology
+Sport Management
+Statistics
+Statistics and Data Science
+Supply Chain Management
+Sustainability Science
+Systems Engineering
+Technical Communication
+Telecommunications
+TESOL
+Theater
+Theology
+Toxicology
+Transportation Engineering
+Transportation Planning
+Urban and Regional Planning
+Urban Design
+Urban Planning
+Urban Studies
+U.S. History
+Veterinary Biomedical Sciences
+Visual Arts
+Wildlife Biology
+Women’s and Gender Studies
+Writing Studies
