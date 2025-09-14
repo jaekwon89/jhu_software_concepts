@@ -8,7 +8,9 @@ Approach:
 Blueprint: 
 module_3/
 |--- __init__.py              # Make module_3 a package
+|
 |--- run.py                   # Main entry point (runs web server or pipeline)
+|
 |--- load_data.py             # Load data to Postgres (30k data from module_2)
 |--- query_data.py            # Functions for all SQL database queries to print output
 |
@@ -198,8 +200,6 @@ logging: to see what was happening during compilation because I was running into
   - analysis.css
   - analysis.html
   - base.html
-
-
 
 
 
