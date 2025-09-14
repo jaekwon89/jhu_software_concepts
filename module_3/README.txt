@@ -9,7 +9,7 @@ Blueprint:
 module_3/
 |--- __init__.py              # Make module_3 a package
 |--- run.py                   # Main entry point (runs web server or pipeline)
-|--- load_data.py             # Helper for formatting data before DB insert
+|--- load_data.py             # Load data to Postgres (30k data from module_2)
 |--- query_data.py            # Functions for all SQL database queries to print output
 |
 |--- app/
@@ -18,8 +18,8 @@ module_3/
     |--- db.py                # Database connection pool and table schema
     |--- db_helper.py         # DB helpers (insert_records_by_url)
     |--- pipeline.py          # Main pipeline orchestrator (scrape -> clean -> LLM -> load)
-    |--- scrape.py            # Fetches raw data from the web (new data)
-    |--- clean.py             # Cleans raw data (status, dates)
+    |--- scrape.py            # Fetches raw data from the web (new data); code from module_2
+    |--- clean.py             # Cleans raw data (status, dates); code from module_2
     |--- query_data.py        # Functions for all SQL database queries for website
     |
     |--- llm_hosting/
@@ -79,6 +79,59 @@ Main
 - Executes Q1–Q10
 - Cmputes percent international
 - Prints output.
+
+
+./app/
+
+# __init__.py
+
+Flow
+1. create_app() constructs Flask(...).
+2. Load config (SECRET_KEY) into app.config.
+3. ensure_table() creates schema if missing.
+4. Import and register bp from .routes (avoid circular imports).
+5. Return app for the caller to use.
+
+
+# clean.py & scrape.py
+- Copied from module_2 assignment scripts
+- Added/Changed:
+  - run_clean(): create a directory (tmp) and json files with specified configuration
+
+
+# db.py
+
+Goal
+- Provide a shared PostgreSQL connection pool and create the 'applicants' table if it doesn't exist.
+
+Flow
+1. Configure DSN (Postgres URL for the 'gradcafe' DB).
+2. Initialize the global pool (created once at import time).
+3. ensure_table(): creates schema if missing.
+  - Open pooled connection and cursor.
+  - Execute DDL(Data Definition Language) for applicants with columns covering raw and LLM fields.
+  - Commit the transaction.
+
+Used: __init__.py, db_helper.py, pipeline.py, routes.py
+
+Analogy: 
+  - Connection pool = the hotel
+  - Connection = a room
+  - Cursor = the clerk for that room
+  - Transaction = room tab - all charges (queries/updates)
+  - DSN: the hotel's address
+  - Pool size = number of rooms
+
+
+
+# db_helper.py
+
+Goal
+- Provide thin helpers around the shared connection pool for 
+  (a) discovering which result IDs already exist and 
+  (b) inserting new records idempotently.
+
+
 
 
 
