@@ -25,7 +25,6 @@ def run_llm_hosting(in_path: Path, out_path: Path) -> None:
     script = Path(__file__).resolve().parent / "llm_hosting" / "app.py"
     cmd = [sys.executable, str(script), "--file", str(in_path), "--out", str(out_path)]
     
-    # Add a try...except block to gracefully handle script failures
     try:
         subprocess.run(cmd, check=True, capture_output=True, text=True)
     except subprocess.CalledProcessError as e:
@@ -69,7 +68,7 @@ def run_pipeline(max_records: int = 5, delay: float = 0.5) -> dict:
     inserted = insert_records_by_url(llm_rows, data_type)
 
     msg = f"Cleaned {n_clean}, LLM rows {n_llm}, inserted {inserted}"
-    #current_app.logger.info("Pipeline: %s", msg)
+
     logging.info("Pipeline: %s", msg)
 
     return {"cleaned": n_clean, "llm": n_llm, "inserted": inserted, "message": msg}
