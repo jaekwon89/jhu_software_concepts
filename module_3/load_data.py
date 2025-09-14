@@ -68,7 +68,7 @@ def ensure_table(conn):
       program TEXT,
       comments TEXT,
       date_added DATE,
-      url TEXT,
+      url TEXT UNIQUE,
       status TEXT,
       term TEXT,
       us_or_international TEXT,
