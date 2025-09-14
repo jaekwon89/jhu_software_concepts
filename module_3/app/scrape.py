@@ -17,8 +17,9 @@ class GradCafeScraping:
         html_text = response.data.decode("utf-8")
         return BeautifulSoup(html_text, "html.parser")
     
-    def collect_records(self, max_records=50, delay=1):
-        
+    def collect_records(self, max_records=150, delay=0.5, skip_rids=None):
+        if skip_rids is None:
+            skip_rids = set()
         seen = set()
         records = []
         meta = {}  # reference id -> {"date_added": "...", "term": "..."}
@@ -34,6 +35,8 @@ class GradCafeScraping:
             print(f"Fetching {self.base_url}{path} ...")
 
             soup = self.scrape_data(path)
+
+            all_skipped = True
             
             # Extract IDs
             for a in soup.find_all("a", href=True):
@@ -42,8 +45,10 @@ class GradCafeScraping:
                     continue
                 rid = m.group(1)  # rid: reference ID (Application Info)
 
-                if rid in seen:
+                if rid in seen or rid in skip_rids:
                     continue
+                
+                all_skipped = False
 
                 # Choose a larger ancestor that likely contains row content
                 # Start from <tbody>
@@ -84,6 +89,8 @@ class GradCafeScraping:
                     break
             
                 time.sleep(delay)  # polite pause between detail fetches
+            if all_skipped:
+                break
 
             # Progress (global order number starting at 1)
             print(
@@ -201,6 +208,8 @@ class GradCafeScraping:
         
         return data    
 
+
+
 ## Test for checking data
 def main():
     scraper = GradCafeScraping()
@@ -216,7 +225,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
 
