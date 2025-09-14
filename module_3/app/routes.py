@@ -1,17 +1,33 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, current_app
+from flask import (
+    Blueprint, 
+    render_template, 
+    redirect, 
+    url_for, 
+    flash, 
+    current_app
+)
+
 import threading
+
 from . import query_data
 from .pipeline import run_pipeline
 
+# Blueprint for this module's routes.
 bp = Blueprint("main", __name__)
+
+# A process-wide flag indicating whether a pull is running.
+# Using an Event is thread-safe and avoids overlapping runs.
 _pull_running = threading.Event()
+
 
 @bp.route("/")
 def index():
+    """Redirect root to the analysis page."""
     return redirect(url_for("main.analysis"))
 
 @bp.route("/analysis")
 def analysis():
+    """Render the analysis dashboard with precomputed metrics."""
     data = {
         "q1_applicant_count": query_data.count_fall_2025(),
         "q2_counts": query_data.percent_international(),
@@ -41,24 +57,23 @@ def pull_data():
         flash("A data pull is already running. Please wait.", "warning")
         return redirect(url_for("main.analysis"))
 
-    # 1. Define the worker to accept the 'app' object as an argument.
     def worker(app):
-        # 2. Use the passed-in 'app' to create the context and log messages.
+        """Run the pipeline inside an application context."""
         with app.app_context():
             try:
-                run_pipeline(max_records=200, delay=0.5)
+                # Tune max_records/delay as needed
+                run_pipeline(max_records=100, delay=0.5)
                 app.logger.info("Pipeline finished successfully.")
             except Exception as exc:
                 app.logger.error(f"Pipeline failed: {exc}")
             finally:
                 _pull_running.clear()
 
-    # 3. Get a direct reference to the current application object.
+    # Capture the real Flask app for use in the thread.
     app = current_app._get_current_object()
     
+    # Set the running flag before starting the thread to avoid races.
     _pull_running.set()
-    # 4. Pass the 'app' object to the thread using the 'args' parameter.
-    #    Note the comma in '(app,)' which makes it a tuple.
     threading.Thread(target=worker, args=(app,), daemon=True).start()
     
     flash("Pull Data started… scraping new rows and updating the database.", "info")
@@ -66,12 +81,12 @@ def pull_data():
 
 @bp.route("/update-analysis", methods=["POST"])
 def update_analysis():
-    # Check if the background task is still running
+    # Check if the background task is still running.
     if _pull_running.is_set():
-        # If it is, tell the user to wait and try again
+        # If it is, tell the user to wait and try again.
         flash("Data pull is still running. Please wait a moment and try again.", "warning")
     else:
-        # If it's finished, refresh the data as usual
+        # If it's finished, refresh the data as usual.
         flash("Analysis refreshed with the latest database results.", "success")
         
     return redirect(url_for("main.analysis"))
