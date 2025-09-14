@@ -123,7 +123,6 @@ Analogy:
   - Pool size = number of rooms
 
 
-
 # db_helper.py
 
 Goal
@@ -131,9 +130,39 @@ Goal
   (a) discovering which result IDs already exist and 
   (b) inserting new records idempotently.
 
+Functions
+1. existing_rids() -> set[str]
+   - Ensures table exists.
+   - SELECT url FROM applicants; extract the numeric id (rid).
+   - Returns a set for O(1) membership checks (set/dict) during scraping/cleaning.
+
+2. insert_records_by_url(records, mapper=data_type) -> int
+   - INSERT INTO applicants with VALUES.
+   - ON CONFLICT (url) DO NOTHING to avoid duplicates.
+   - Uses 'mapper(record)' to coerce a dict into a 14-column tuple aligned with schema.
+   - Returns count of rows actually inserted.
+
+3. write_json(path, rows) / read_json(path)
+   - Write/read json files
 
 
+# routes.py
 
+Goal
+- Show analysis dashboard and provide updated data and analysis with click buttons.
 
+Routes
+1. GET /
+   - Redirect to /analysis for a clean entry point.
 
+2. GET /analysis
+   - Calls query_data.py functions to compute Q1–Q10 metrics.
+
+3. POST /pull-data
+   - Run pipeline.
+   - If new data exists, update.
+   - If no new data exists, do nothing.
+
+4. POST /update-analysis
+   - Update analysis with current data in the database.
 
