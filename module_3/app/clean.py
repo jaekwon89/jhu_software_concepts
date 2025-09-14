@@ -8,7 +8,7 @@ from .db_helper import write_json, TMP_DIR
 # ---------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------
-MAX_RECORDS = 1  # how many to fetch
+MAX_RECORDS = 100  # how many to fetch
 REQUEST_DELAY = 0.5  # seconds between requests
 OUTPUT_JSON = "new_applicant_data.json"
 
@@ -27,10 +27,8 @@ STATUS_RE = re.compile(
     '''
 )
 
+# Convert numeric dd/mm/yyyy to 'D Mon' (e.g., '01/03/2025' -> '1 Mar')
 def _format_day_mon(date_str: str) -> str:
-    """
-    Convert numeric dd/mm/yyyy to 'D Mon' (e.g., '01/03/2025' -> '1 Mar').
-    """
     if not date_str:
         return ""
     
@@ -47,8 +45,8 @@ def _format_day_mon(date_str: str) -> str:
     
     return f"{day} {mon_abbrev}"
 
+# Return 'Decision on D Mon' (e.g., 'Accepted on 1 Mar').
 def status(raw: str) -> str:
-    """Return 'Decision on D Mon' (e.g., 'Accepted on 1 Mar')."""
     if not raw:
         return ""
     
