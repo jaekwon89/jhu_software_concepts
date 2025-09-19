@@ -76,7 +76,7 @@
 
 <section class="qa-card">
   <h3>What is the average GPA of American students in {{ term_label }}?</h3>
-  <p class="answer"><span>Answer:</span> {{ data.q4_avg_gpa_us|round(2) }}</p>
+  <p class="answer"><span>Answer:</span> {{ (data.q4_avg_gpa_us or 0)|round(2) }}</p>
 </section>
 
 <section class="qa-card">

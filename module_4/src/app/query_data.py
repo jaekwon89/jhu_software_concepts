@@ -92,18 +92,10 @@ def avg_scores():
             cur.execute(
                 """
                 SELECT
-                    AVG(gpa) FILTER (
-                        WHERE gpa BETWEEN 0.01 AND 4.3
-                    ) AS avg_gpa,
-                    AVG(gre) FILTER (
-                        WHERE gre BETWEEN 130 AND 170
-                    ) AS avg_gre,
-                    AVG(gre_v) FILTER (
-                        WHERE gre_v BETWEEN 130 AND 170
-                    ) AS avg_gre_v,
-                    AVG(gre_aw) FILTER (
-                        WHERE gre_aw BETWEEN 0.01 AND 6
-                    ) AS avg_gre_aw
+                    COALESCE(AVG(gpa)    FILTER (WHERE gpa    BETWEEN 0.01 AND 4.3), 0.0),
+                    COALESCE(AVG(gre)    FILTER (WHERE gre    BETWEEN 130   AND 170), 0.0),
+                    COALESCE(AVG(gre_v)  FILTER (WHERE gre_v  BETWEEN 130   AND 170), 0.0),
+                    COALESCE(AVG(gre_aw) FILTER (WHERE gre_aw BETWEEN 0.01  AND 6),   0.0)
                 FROM applicants;
                 """
             )
@@ -148,8 +140,8 @@ def acceptance_rate_fall2025():
             cur.execute(
                 """
                 SELECT 
-                    COUNT(*) FILTER (WHERE status LIKE '%Accepted%')::numeric 
-                         / COUNT(*)::numeric * 100
+                    (COUNT(*) FILTER (WHERE status LIKE '%Accepted%')::numeric * 100)
+                         / NULLIF(COUNT(*)::numeric, 0)
                     FROM applicants
                     WHERE term = 'Fall 2025';
                 """

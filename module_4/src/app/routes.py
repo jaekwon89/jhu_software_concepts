@@ -3,7 +3,8 @@ from flask import (
     render_template, 
     redirect, 
     url_for, 
-    flash, 
+    flash,
+    jsonify,
     current_app
 )
 
@@ -27,7 +28,6 @@ def index():
     :return: Redirect response to ``/analysis``.
     :rtype: werkzeug.wrappers.response.Response
     """
-    return
     return redirect(url_for("main.analysis"))
 
 @bp.route("/analysis")
@@ -75,8 +75,8 @@ def pull_data():
     :rtype: werkzeug.wrappers.response.Response
     """
     if _pull_running.is_set():
-        flash("A data pull is already running. Please wait.", "warning")
-        return redirect(url_for("main.analysis"))
+        return jsonify({"busy": True}), 409
+
 
     def worker(app):
         """Run the pipeline inside an application context.
@@ -86,6 +86,7 @@ def pull_data():
         """
         with app.app_context():
             try:
+                _pull_running.set()
                 # Tune max_records/delay as needed
                 run_pipeline(max_records=100, delay=0.5)
                 app.logger.info("Pipeline finished successfully.")
@@ -117,9 +118,8 @@ def update_analysis():
     # Check if the background task is still running.
     if _pull_running.is_set():
         # If it is, tell the user to wait and try again.
-        flash("Data pull is still running. Please wait a moment and try again.", "warning")
+        return jsonify({"busy": True}), 409
     else:
         # If it's finished, refresh the data as usual.
         flash("Analysis refreshed with the latest database results.", "success")
-        
-    return redirect(url_for("main.analysis"))
+        return redirect(url_for("main.analysis"))
