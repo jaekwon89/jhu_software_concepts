@@ -1,3 +1,31 @@
+"""Database helper for ensuring the applicants table exists.
+
+This module provides a global PostgreSQL connection pool and a
+utility to create the ``applicants`` table if it does not already exist.
+
+Schema
+------
+
+.. code-block:: sql
+
+   CREATE TABLE IF NOT EXISTS applicants(
+       p_id SERIAL PRIMARY KEY,
+       program TEXT,
+       comments TEXT,
+       date_added DATE,
+       url TEXT,
+       status TEXT,
+       term TEXT,
+       us_or_international TEXT,
+       gpa FLOAT,
+       gre FLOAT,
+       gre_v FLOAT,
+       gre_aw FLOAT,
+       degree TEXT,
+       llm_generated_program TEXT,
+       llm_generated_university TEXT
+   );
+"""
 import psycopg_pool
 
 # Configuration
@@ -8,6 +36,14 @@ DSN = "postgresql://postgres:postgres@localhost:5432/gradcafe"
 pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)
 
 def ensure_table():
+    """Ensure the ``applicants`` table exists.
+
+    Executes a ``CREATE TABLE IF NOT EXISTS`` DDL statement to create
+    the table with the expected schema if it does not already exist.
+
+    :return: None
+    :rtype: NoneType
+    """
     ddl = """
     CREATE TABLE IF NOT EXISTS applicants(
       p_id SERIAL PRIMARY KEY,

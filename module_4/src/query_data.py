@@ -8,6 +8,12 @@ pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)
 
 # 1. Applicant count (Fall 2025)
 def count_fall_2025():
+    """
+    Count the total number of applicants for Fall 2025.
+
+    :return: Number of applicants in Fall 2025
+    :rtype: int
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:      
             cur.execute(
@@ -22,6 +28,12 @@ def count_fall_2025():
 
 # 2. Counts by citizenship (International / American / Other)
 def percent_international():
+    """
+    Get counts of applicants by citizenship category: International, American, and Other.
+
+    :return: Dictionary with counts
+    :rtype: dict
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -49,6 +61,16 @@ def percent_international():
 
 # 3. Average GPA/GREs with range filters (0 treated as missing)
 def avg_scores():
+    """
+    Compute average GPA and GRE scores across all applicants, ignoring invalid or missing values.
+
+    GPA is considered valid if between 0.01 and 4.3;  
+    GRE / GRE_V between 130 and 170;  
+    GRE_AW between 0.01 and 6.
+
+    :return: Dictionary of average scores
+    :rtype: dict
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -79,6 +101,12 @@ def avg_scores():
 
 # 4. Average GPA of American students in Fall 2025
 def avg_gpa_american_fall2025():
+    """
+    Calculate the average GPA of American applicants in Fall 2025.
+
+    :return: Average GPA (or None if no valid records)
+    :rtype: float or None
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -95,6 +123,12 @@ def avg_gpa_american_fall2025():
 
 # 5. Acceptance rate in Fall 2025
 def acceptance_rate_fall2025():
+    """
+    Compute the acceptance rate (percentage) for Fall 2025.
+
+    :return: Acceptance rate as a percentage (0–100), or None if no applicants
+    :rtype: float or None
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -111,6 +145,12 @@ def acceptance_rate_fall2025():
 
 # 6. Avg GPA of accepted applicants in Fall 2025
 def avg_gpa_fall2025_acceptances():
+    """
+    Compute the average GPA of accepted applicants in Fall 2025.
+
+    :return: Average GPA of accepted applicants, or None if none found
+    :rtype: float or None
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -127,6 +167,13 @@ def avg_gpa_fall2025_acceptances():
 
 # 7. Count: JHU Masters in Computer Science
 def count_jhu_masters_cs():
+    """
+    Count the number of applicants for the Masters in Computer Science program
+    at Johns Hopkins University.
+
+    :return: Number of such applicants
+    :rtype: int
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -143,6 +190,12 @@ def count_jhu_masters_cs():
 
 # 8. Count: Georgetown PhD in CS acceptances in 2025
 def count_gt_phd_aceept():
+    """
+    Count accepted PhD Computer Science applicants at Georgetown University in 2025.
+
+    :return: Number of accepted Georgetown PhD CS applicants in 2025
+    :rtype: int
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -161,6 +214,12 @@ def count_gt_phd_aceept():
 
 # 9. Degree counts in 2025
 def degree_counts_2025():
+    """
+    Get counts of applicants by degree type for 2025.
+
+    :return: Each item is a tuple (degree, number of applicants)
+    :rtype: list of tuple
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -179,6 +238,12 @@ def degree_counts_2025():
 
 # 10. Top 5 programs by entries in 2025
 def top_5_programs():
+    """
+    Return the top 5 programs by number of applicants in 2025.
+
+    :return: List of top 5 (program, applicant count) tuples
+    :rtype: list of tuple
+    """
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -198,6 +263,12 @@ def top_5_programs():
 
 
 def main():
+    """
+    Run all queries (1-10) and print results to console.
+
+    :return: None
+    :rtype: NoneType
+    """
     # Q1
     q1 = count_fall_2025()
 

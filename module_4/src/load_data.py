@@ -11,6 +11,13 @@ JSON_PATH = "../module_2/llm_extend_applicant_data.json"
 # Load Data
 # ---------------------------------------------------------------------
 def load_json(path=JSON_PATH):
+    """Load JSON applicant data from file.
+
+    :param path: Path to the JSON file.
+    :type path: str
+    :return: Parsed JSON data as a Python object.
+    :rtype: list[dict]
+    """
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     return data
@@ -20,6 +27,16 @@ def load_json(path=JSON_PATH):
 # Normalize string format
 # ---------------------------------------------------------------------
 def norm_str(value):
+    """Normalize a value into a clean string.
+
+    - Converts None → ``""``
+    - Strips leading/trailing whitespace
+
+    :param value: Input value (any type).
+    :type value: Any
+    :return: Normalized string.
+    :rtype: str
+    """
     if value is None:
         return ""
     else:
@@ -30,6 +47,15 @@ def norm_str(value):
 # Date format
 # ---------------------------------------------------------------------
 def to_date(added_date):
+    """Convert a date string to a ``datetime.date``.
+
+    Expects format like ``"January 1, 2025"``.
+
+    :param added_date: Raw date string.
+    :type added_date: str
+    :return: Date object, or empty string if invalid.
+    :rtype: datetime.date or str
+    """
     if not added_date:
         return ""
     
@@ -44,6 +70,15 @@ def to_date(added_date):
 # Float format for scores
 # ---------------------------------------------------------------------
 def to_float(score):
+    """Convert a score to float.
+
+    Handles numeric strings, removes "GPA" prefix, ignores empty/invalid values.
+
+    :param score: Raw score input.
+    :type score: str or float or None
+    :return: Float score or None.
+    :rtype: float or None
+    """
     if score is None or score == "":
         return None
     
@@ -62,6 +97,13 @@ def to_float(score):
 # Create table if not exists
 # ---------------------------------------------------------------------
 def ensure_table(conn):
+    """Ensure the ``applicants`` table exists in PostgreSQL.
+
+    :param conn: Database connection.
+    :type conn: psycopg.Connection
+    :return: None
+    :rtype: NoneType
+    """
     ddl = """
     CREATE TABLE IF NOT EXISTS applicants(
       p_id SERIAL PRIMARY KEY,
@@ -88,6 +130,13 @@ def ensure_table(conn):
 # Data Type SETUP
 # ---------------------------------------------------------------------
 def data_type(data: dict):
+    """Normalize and convert a single applicant record.
+
+    :param data: Dictionary of applicant fields.
+    :type data: dict
+    :return: List of normalized values in correct order for insertion.
+    :rtype: list
+    """
     return [
         norm_str(data.get("program")),
         norm_str(data.get("comments")),
@@ -109,6 +158,18 @@ def data_type(data: dict):
 # Main
 # ---------------------------------------------------------------------
 def main():
+    """Load JSON file and insert all rows into PostgreSQL.
+
+    Steps
+    -----
+    1. Load JSON data
+    2. Ensure ``applicants`` table exists
+    3. Bulk load rows using ``COPY`` for efficiency
+    4. Commit transaction
+
+    :return: None
+    :rtype: NoneType
+    """
     data = load_json()  # Load JSON
 
     pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)

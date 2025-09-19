@@ -1,4 +1,21 @@
-# Had to spend much more time to learn and create the pipeline
+"""Pipeline for scraping, cleaning, LLM normalization, and database insertion.
+
+This module coordinates the following steps:
+
+1. Determine which records are already in the database.
+2. Scrape new survey results and write them to a temporary JSON file.
+3. Run an external LLM-hosting script to normalize the data.
+4. Insert normalized records into PostgreSQL.
+
+Usage
+-----
+
+.. code-block:: python
+
+   from app.pipeline import run_pipeline
+   summary = run_pipeline(max_records=10, delay=1.0)
+   print(summary["message"])
+"""
 
 import logging
 
@@ -22,6 +39,19 @@ logger = logging.getLogger(__name__)
 
 # Call llm_hosting to do the cleaning process
 def run_llm_hosting(in_path: Path, out_path: Path) -> None:
+    """Run the external LLM-hosting script to clean/normalize JSON.
+
+    Calls ``llm_hosting/app.py`` as a subprocess, passing input and output
+    file paths. Logs and re-raises any subprocess errors.
+
+    :param in_path: Path to the input JSON file.
+    :type in_path: pathlib.Path
+    :param out_path: Path where the LLM-normalized JSON will be written.
+    :type out_path: pathlib.Path
+    :return: None
+    :rtype: NoneType
+    :raises subprocess.CalledProcessError: If the external script fails.
+    """
 
     script = Path(__file__).resolve().parent / "llm_hosting" / "app.py"
     cmd = [sys.executable, str(script), "--file", str(in_path), "--out", str(out_path)]
@@ -40,6 +70,22 @@ def run_llm_hosting(in_path: Path, out_path: Path) -> None:
 
 # Run pipeline
 def run_pipeline(max_records: int = 5, delay: float = 0.5) -> dict:
+    """Run the full scraping → cleaning → LLM → database pipeline.
+
+    Steps
+    -----
+    1. Skip already-existing records.
+    2. Scrape new rows and save to ``CLEAN_JSON``.
+    3. Run LLM-hosting to produce ``FINAL_JSON``.
+    4. Insert normalized rows into the database.
+
+    :param max_records: Maximum number of new records to scrape.
+    :type max_records: int
+    :param delay: Delay in seconds between scrape requests.
+    :type delay: float
+    :return: Summary dictionary with counts and status message.
+    :rtype: dict
+    """
     # 1. Skip what we already 'have'
     have = existing_rids()
 

@@ -22,12 +22,24 @@ _pull_running = threading.Event()
 
 @bp.route("/")
 def index():
-    """Redirect root to the analysis page."""
+    """Redirect root URL to the analysis page.
+
+    :return: Redirect response to ``/analysis``.
+    :rtype: werkzeug.wrappers.response.Response
+    """
+    return
     return redirect(url_for("main.analysis"))
 
 @bp.route("/analysis")
 def analysis():
-    """Render the analysis dashboard with precomputed metrics."""
+    """Render the analysis dashboard with precomputed metrics.
+
+    Queries multiple metrics from the database via :mod:`query_data` and
+    computes percentages for display.
+
+    :return: Rendered HTML page with data injected.
+    :rtype: str
+    """
     data = {
         "q1_applicant_count": query_data.count_fall_2025(),
         "q2_counts": query_data.percent_international(),
@@ -37,7 +49,7 @@ def analysis():
         "q5_accept_rate": query_data.acceptance_rate_fall2025(),
         "q6_avg_gpa_accept": query_data.avg_gpa_fall2025_acceptances(),
         "q7_jhu_ms_cs": query_data.count_jhu_masters_cs(),
-        "q8_georgetown_phd_cs": query_data.count_gt_phd_aceept(),
+        "q8_georgetown_phd_cs": query_data.count_gt_phd_accept(),
         "q9_degree_counts": query_data.degree_counts_2025(),
         "q10_top_programs": query_data.top_5_programs(),
     }
@@ -53,12 +65,25 @@ def analysis():
 
 @bp.route("/pull-data", methods=["POST"])
 def pull_data():
+    """Start a background pipeline run to fetch and insert new data.
+
+    If a pull is already running, flashes a warning. Otherwise, starts a
+    background thread that calls :func:`pipeline.run_pipeline` inside an
+    application context.
+
+    :return: Redirect back to the analysis page with a flash message.
+    :rtype: werkzeug.wrappers.response.Response
+    """
     if _pull_running.is_set():
         flash("A data pull is already running. Please wait.", "warning")
         return redirect(url_for("main.analysis"))
 
     def worker(app):
-        """Run the pipeline inside an application context."""
+        """Run the pipeline inside an application context.
+
+        :param app: The Flask application instance.
+        :type app: flask.Flask
+        """
         with app.app_context():
             try:
                 # Tune max_records/delay as needed
@@ -81,6 +106,14 @@ def pull_data():
 
 @bp.route("/update-analysis", methods=["POST"])
 def update_analysis():
+    """Refresh the analysis page once a pipeline run is finished.
+
+    If a pull is still running, notifies the user to wait. Otherwise,
+    reloads data from the database.
+
+    :return: Redirect back to the analysis page with a flash message.
+    :rtype: werkzeug.wrappers.response.Response
+    """
     # Check if the background task is still running.
     if _pull_running.is_set():
         # If it is, tell the user to wait and try again.

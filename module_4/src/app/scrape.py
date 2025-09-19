@@ -4,20 +4,49 @@ import re
 import time
 
 class GradCafeScraping:
+    """Scraper for TheGradCafe survey/results pages."""
+
     BASE_URL = "https://www.thegradcafe.com"
 
     def __init__(self, base_url=BASE_URL):
+        """Initialize the scraper.
+
+        :param base_url: Base URL for the site (override for testing/mocking).
+        :type base_url: str
+        """
         self.base_url = base_url
         self.http = urllib3.PoolManager()
         self.survey_url = f"{self.base_url}/survey/"
         self.result_re = re.compile(r"^/result/(\d+)$")  # Search each ID
 
     def scrape_data(self, path="/survey/"):
+        """Fetch a page and return a BeautifulSoup parser.
+
+        :param path: Path under the base URL to fetch.
+        :type path: str
+        :return: Parsed HTML document.
+        :rtype: bs4.BeautifulSoup
+        """
         response = self.http.request("GET", self.base_url + path)
         html_text = response.data.decode("utf-8")
         return BeautifulSoup(html_text, "html.parser")
     
     def collect_records(self, max_records=150, delay=0.5, skip_rids=None):
+        """Collect records by walking the survey listing pages.
+
+        For each listing page (``/survey/`` then ``/survey/?page=N``), extract
+        result IDs, visit each detail page, parse fields, and accumulate a list
+        of records until ``max_records`` is reached.
+
+        :param max_records: Maximum number of records to collect.
+        :type max_records: int
+        :param delay: Politeness delay (seconds) between requests.
+        :type delay: float
+        :param skip_rids: Set of result IDs (strings) to skip.
+        :type skip_rids: set[str] or None
+        :return: List of parsed result dictionaries.
+        :rtype: list[dict]
+        """
         if skip_rids is None:
             skip_rids = set()
         seen = set()
@@ -109,7 +138,18 @@ class GradCafeScraping:
     
 
     def parse_results(self, rid: str, meta=""):
-        """Scrape a single result detail page and return a dict of cleaned fields."""
+        """Scrape a single result detail page and return parsed fields.
+
+        :param rid: Result ID (e.g., ``"123456"``).
+        :type rid: str
+        :param meta: Optional metadata mapping produced by listing parsing,
+            of the form ``{rid: {"date_added": str, "term": str}}``. If not
+            provided or mismatched, date/term are left as empty strings unless
+            found on the detail page.
+        :type meta: dict[str, dict] or str
+        :return: A dictionary with normalized fields (program, degree, scores, etc.).
+        :rtype: dict
+        """
         soup = self.scrape_data(f"/result/{rid}")
         text = soup.get_text(" ", strip=True)
 
@@ -207,22 +247,3 @@ class GradCafeScraping:
                 data["term"] = m["term"]
         
         return data    
-
-
-
-## Test for checking data
-def main():
-    scraper = GradCafeScraping()
-    
-    records = scraper.collect_records(max_records=18, delay=1)
-
-    print(f"Fetched {len(records)} records.\n")
-    for i, rec in enumerate(records, 1):
-        print(f"Record #{i}")
-        print(rec)
-        print("=" * 60)
-    #print(scraper.scrape_data().prettify())
-
-if __name__ == '__main__':
-    main()
-

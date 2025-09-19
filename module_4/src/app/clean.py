@@ -1,3 +1,20 @@
+"""Cleaning pipeline for GradCafe scraped records.
+
+This module provides functions for:
+
+* Normalizing status strings (decision + date).
+* Cleaning individual records.
+* Running a batch cleaning pipeline with scraping, filtering, and writing to JSON.
+
+Typical usage
+-------------
+
+.. code-block:: python
+
+   from app.clean import run_clean
+   n = run_clean(skip_rids=set(), max_records=50)
+   print(f"Cleaned {n} records")
+"""
 import re
 from datetime import datetime
 from pathlib import Path
@@ -29,6 +46,15 @@ STATUS_RE = re.compile(
 
 # Convert numeric dd/mm/yyyy to 'D Mon' (e.g., '01/03/2025' -> '1 Mar')
 def _format_day_mon(date_str: str) -> str:
+    """Convert a numeric date string to ``D Mon`` format.
+
+    Example: ``"01/03/2025"`` → ``"1 Mar"``.
+
+    :param date_str: Raw date string, e.g., ``"01/03/2025"``.
+    :type date_str: str
+    :return: Formatted string or the original if parsing fails.
+    :rtype: str
+    """
     if not date_str:
         return ""
     
@@ -47,6 +73,15 @@ def _format_day_mon(date_str: str) -> str:
 
 # Return 'Decision on D Mon' (e.g., 'Accepted on 1 Mar').
 def status(raw: str) -> str:
+    """Normalize a status string (decision + optional date).
+
+    Example: ``"Accepted on 01/03/2025"`` → ``"Accepted on 1 Mar"``.
+
+    :param raw: Raw status string.
+    :type raw: str
+    :return: Normalized status string.
+    :rtype: str
+    """
     if not raw:
         return ""
     
@@ -61,6 +96,15 @@ def status(raw: str) -> str:
     return f"{decision} on {date_part}" if date_part else decision
 
 def clean_record(rec: dict):
+    """Clean a single record dictionary.
+
+    Updates the ``status`` field to a normalized format.
+
+    :param rec: Raw record dictionary.
+    :type rec: dict
+    :return: Cleaned record dictionary.
+    :rtype: dict
+    """
     rec = dict(rec)  # shallow copy
     rec["status"] = status(rec.get("status", ""))
     return rec
@@ -75,6 +119,25 @@ def run_clean(
         delay=REQUEST_DELAY, 
         out_filename=OUTPUT_JSON
     ) -> int:
+    """Run the cleaning pipeline.
+
+    Steps
+    -----
+    1. Scrape records from GradCafe (skipping known IDs).
+    2. Normalize the ``status`` field.
+    3. Write results to JSON if not empty.
+
+    :param skip_rids: Set of result IDs to skip.
+    :type skip_rids: set[str]
+    :param max_records: Maximum number of records to fetch.
+    :type max_records: int
+    :param delay: Delay (seconds) between requests.
+    :type delay: float
+    :param out_filename: Output JSON filename inside TMP_DIR.
+    :type out_filename: str
+    :return: Number of records cleaned and written.
+    :rtype: int
+    """
     scraper = GradCafeScraping()
     
     raw = scraper.collect_records(

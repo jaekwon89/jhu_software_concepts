@@ -1,3 +1,13 @@
+"""Database utilities for working with applicant records.
+
+This module provides helpers for:
+
+* Checking existing result IDs in the database.
+* Inserting new records (with URL uniqueness).
+* Reading/writing JSON files for intermediate pipeline steps.
+
+It depends on the global PostgreSQL connection pool defined in :mod:`db`.
+"""
 from pathlib import Path
 import json
 from .db import pool, ensure_table
@@ -9,6 +19,13 @@ TMP_DIR.mkdir(exist_ok=True)
 
 # Return rids already stored (derived from URL).
 def existing_rids() -> set[str]:
+    """Return the set of reference IDs (``rid``) already stored.
+
+    Extracts IDs from the ``url`` field in the ``applicants`` table.
+
+    :return: Set of unique reference IDs.
+    :rtype: set[str]
+    """
     ensure_table()  # Make sure the table exists before SELECTing.
     urls = []
     rids = set()
@@ -28,6 +45,19 @@ def existing_rids() -> set[str]:
     
 # Insert records using a unique URL, ignoring duplicates.
 def insert_records_by_url(records: list[dict], data_type) -> int:
+    """Insert applicant records into the database.
+
+    Uses ``ON CONFLICT (url) DO NOTHING`` to skip duplicates
+    (uniqueness is enforced by ``url``).
+
+    :param records: List of record dictionaries to insert.
+    :type records: list[dict]
+    :param data_type: Function that converts a record dict into
+                      a list of values matching the schema.
+    :type data_type: callable
+    :return: Number of rows successfully inserted.
+    :rtype: int
+    """
     if not records:
         return 0
 
@@ -55,12 +85,30 @@ def insert_records_by_url(records: list[dict], data_type) -> int:
 
 # Write a list of dicts to a pretty-printed JSON file.
 def write_json(path: Path, rows: list[dict]) -> None:
+    """Write a list of dicts to a pretty-printed JSON file.
+
+    :param path: Path to the file to write.
+    :type path: pathlib.Path
+    :param rows: List of row dicts to serialize.
+    :type rows: list[dict]
+    :return: None
+    :rtype: NoneType
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
         json.dump(rows, f, ensure_ascii=False, indent=2)
 
 # READ json/jsonl file
 def read_json(path: Path) -> list[dict]:
+    """Read a JSON or JSONL file into a list of dicts.
+
+    Supports both JSON (array of objects) and JSON Lines (one object per line).
+
+    :param path: Path to the JSON or JSONL file.
+    :type path: pathlib.Path
+    :return: List of records parsed from the file.
+    :rtype: list[dict]
+    """
     rows = []
     with path.open("r", encoding="utf-8") as f:
         for line in f:

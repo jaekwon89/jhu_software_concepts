@@ -13,16 +13,55 @@ from app.pipeline import run_pipeline         # Run pipeline
 
 
 def cmd_web(host: str, port: int, debug: bool) -> None:
+    """Start the Flask web application.
+
+    :param host: Hostname or IP address to bind (e.g., ``"0.0.0.0"``).
+    :type host: str
+    :param port: TCP port for the server.
+    :type port: int
+    :param debug: Whether to enable Flask debug mode (reloader & debugger).
+    :type debug: bool
+    :return: None
+    :rtype: NoneType
+    """
     app = create_app()
     app.run(host=host, port=port, debug=debug)
 
 
 def cmd_pipeline(max_records: int, delay: float) -> None:
+    """Execute the end-to-end data pipeline.
+
+    This triggers scraping, cleaning, LLM-based normalization, and loading.
+
+    :param max_records: Maximum number of records to process.
+    :type max_records: int
+    :param delay: Delay in seconds between network requests.
+    :type delay: float
+    :return: None
+    :rtype: NoneType
+    """
     summary = run_pipeline(max_records=max_records, delay=delay)
     print(summary["message"])
 
 
 def main() -> None:
+    """Parse CLI arguments and dispatch to the chosen command.
+
+    Subcommands
+    -----------
+    - ``web``:
+        - ``--host`` (str, default ``"0.0.0.0"``)
+        - ``--port`` (int, default ``8080"``)
+        - ``--debug`` (flag)
+    - ``pipeline``:
+        - ``--max-records`` (int, default ``100``)
+        - ``--delay`` (float, default ``0.5``)
+
+    If no subcommand is provided, the function defaults to starting the web app.
+
+    :return: None
+    :rtype: NoneType
+    """
     parser = argparse.ArgumentParser(description="Run web app or data pipeline.")
     sub = parser.add_subparsers(dest="cmd")
 
