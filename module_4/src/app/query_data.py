@@ -262,7 +262,7 @@ def top_5_programs():
     return results
 
 
-def main():
+def main():  # pragma: no cover
     """Run all queries and print formatted results.
 
     :return: None
@@ -310,5 +310,5 @@ def main():
     for program, count in q10:
         print(f"\t{program}: {count}")
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

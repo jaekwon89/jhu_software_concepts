@@ -1,21 +1,65 @@
-# Conftest
-
 import pytest
-from app import create_app
-import app.db as db
-import app.routes as routes
-from app.db_helper import insert_records_by_url
-from load_data import data_type
+
+# -------------------------------------------------------------------
+# 1) Disable real psycopg_pool.ConnectionPool in tests (session-wide)
+#    Use pytest.MonkeyPatch directly (not the function-scoped fixture).
+#    Import *no* app modules before this runs.
+# -------------------------------------------------------------------
+@pytest.fixture(scope="session", autouse=True)
+def _disable_real_connectionpool():
+    import psycopg_pool
+    mp = pytest.MonkeyPatch()
+
+    class NoopPool:
+        def __init__(self, *a, **k): pass
+        def connection(self):
+            # If anything accidentally tries to use this, fail fast
+            raise RuntimeError(
+                "ConnectionPool is disabled in tests; patch qd.pool in the test."
+            )
+        def close(self): pass
+
+    mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
+    yield
+    mp.undo()
 
 
+# -------------------------------------------------------------------
+# 2) Flask app & client
+#    Import create_app lazily so it sees the patched ConnectionPool.
+# -------------------------------------------------------------------
+@pytest.fixture(scope="session")
+def app():
+    from app import create_app
+    app_instance = create_app()
+    app_instance.config["TESTING"] = True
+    return app_instance
+
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
+
+
+# -------------------------------------------------------------------
+# 3) Global autouse stubs for routes.query_data.* so /analysis never
+#    rounds None. Import routes lazily (after patch).
+# -------------------------------------------------------------------
 @pytest.fixture(autouse=True)
 def stub_queries(monkeypatch):
+    import app.routes as routes
+
     def patch(name, value):
         if hasattr(routes.query_data, name):
             monkeypatch.setattr(routes.query_data, name, value)
+
     patch("count_fall_2025", lambda: 1)
-    patch("percent_international", lambda: {"international_count": 1, "us_count": 1, "other_count": 0})
-    patch("avg_scores", lambda: {"avg_gpa": 3.4, "avg_gre": 165, "avg_gre_v": 158, "avg_gre_aw": 4.5})
+    patch("percent_international", lambda: {
+        "international_count": 1, "us_count": 1, "other_count": 0
+    })
+    patch("avg_scores", lambda: {
+        "avg_gpa": 3.4, "avg_gre": 165, "avg_gre_v": 158, "avg_gre_aw": 4.5
+    })
     patch("avg_gpa_american_fall2025", lambda: 3.2)
     patch("acceptance_rate_fall2025", lambda: 37.12)
     patch("avg_gpa_fall2025_acceptances", lambda: 3.6)
@@ -23,31 +67,15 @@ def stub_queries(monkeypatch):
     patch("count_gt_phd_accept", lambda: 2)
     patch("degree_counts_2025", lambda: [("Masters", 10)])
     patch("top_5_programs", lambda: [("CS", 8)])
-    
-# ---------------------------
-# Flask app & client
-# ---------------------------
+
+
+# -------------------------------------------------------------------
+# 4) DB isolation when a test needs the real applicants table.
+#    Import db lazily (after patch); opt-in per test.
+# -------------------------------------------------------------------
 @pytest.fixture
-def app():
-    from app import create_app
-    app_instance = create_app()
-    app_instance.config["TESTING"] = True        # <— important
-    yield app_instance
-
-
-@pytest.fixture
-def client(app):
-    """Flask test client (use follow_redirects=True in tests when needed)."""
-    return app.test_client()
-
-
-
-# ---------------------------
-# DB isolation
-# ---------------------------
-@pytest.fixture(autouse=True)
 def clean_db():
-    """Truncate applicants table before and after each test."""
+    import app.db as db
     db.ensure_table()
     with db.pool.connection() as conn, conn.cursor() as cur:
         cur.execute("TRUNCATE TABLE applicants;")
@@ -58,26 +86,20 @@ def clean_db():
         conn.commit()
 
 
-# ---------------------------
-# Pipeline/thread stubbing
-# ---------------------------
+# -------------------------------------------------------------------
+# 5) Helper to run /pull-data synchronously in tests.
+#    Import lazily; clears busy flag.
+# -------------------------------------------------------------------
 @pytest.fixture
 def install_sync_pipeline(monkeypatch):
-    """
-    Return a helper that makes /pull-data run synchronously:
-      - run_pipeline is stubbed to insert provided rows using real insert function
-      - background Thread is replaced by a FakeThread that runs immediately
-      - busy flag is cleared
-    Usage:
-        rows = [...]
-        install_sync_pipeline(rows)
-    """
     def _install(rows):
+        import app.routes as routes
+        from app.db_helper import insert_records_by_url
+        from load_data import data_type
+
         def fake_run_pipeline(*_a, **_k):
             inserted = insert_records_by_url(rows, data_type)
             return {"cleaned": len(rows), "llm": len(rows), "inserted": inserted, "message": "ok"}
-
-        monkeypatch.setattr(routes, "run_pipeline", fake_run_pipeline)
 
         class FakeThread:
             def __init__(self, target, args=(), daemon=None):
@@ -85,7 +107,8 @@ def install_sync_pipeline(monkeypatch):
             def start(self):
                 self._target(*self._args)
 
+        monkeypatch.setattr(routes, "run_pipeline", fake_run_pipeline)
         monkeypatch.setattr(routes.threading, "Thread", FakeThread)
-        routes._pull_running.clear()  # ensure not busy
-    return _install
+        routes._pull_running.clear()
 
+    return _install

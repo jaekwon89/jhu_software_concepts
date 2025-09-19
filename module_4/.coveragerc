@@ -1,0 +1,6 @@
+[run]
+omit =
+    src/run.py
+    src/app/scrape.py
+    src/app/clean.py
+    src/load_data.py
