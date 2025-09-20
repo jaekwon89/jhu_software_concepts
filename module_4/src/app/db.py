@@ -27,9 +27,16 @@ Schema
    );
 """
 import psycopg_pool
+import os
 
-# Configuration
-DSN = "postgresql://postgres:postgres@localhost:5432/gradcafe"
+# --- Configuration ---
+# Build the DSN from environment variables, with localhost as a fallback.
+PGHOST = os.getenv("PGHOST", "localhost")
+PGDATABASE = os.getenv("PGDATABASE", "gradcafe")
+PGUSER = os.getenv("PGUSER", "postgres")
+PGPASSWORD = os.getenv("PGPASSWORD", "postgres")
+
+DSN = f"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:5432/{PGDATABASE}"
 
 
 # Global connection pool for the app
