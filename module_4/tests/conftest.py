@@ -1,4 +1,5 @@
 import pytest
+import os
 
 # -------------------------------------------------------------------
 # 1) Disable real psycopg_pool.ConnectionPool in tests (session-wide)
@@ -7,18 +8,15 @@ import pytest
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session", autouse=True)
 def _disable_real_connectionpool():
+    # IMPORTANT: don't disable DB in CI
+    if os.getenv("CI") == "true":
+        return
     import psycopg_pool
     mp = pytest.MonkeyPatch()
-
     class NoopPool:
         def __init__(self, *a, **k): pass
-        def connection(self):
-            # If anything accidentally tries to use this, fail fast
-            raise RuntimeError(
-                "ConnectionPool is disabled in tests; patch qd.pool in the test."
-            )
+        def connection(self): raise RuntimeError("ConnectionPool disabled in tests")
         def close(self): pass
-
     mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
     yield
     mp.undo()

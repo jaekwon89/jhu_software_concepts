@@ -27,7 +27,6 @@ Schema
    );
 """
 import psycopg_pool
-import os
 
 # Configuration
 DSN = "postgresql://postgres:postgres@localhost:5432/gradcafe"
