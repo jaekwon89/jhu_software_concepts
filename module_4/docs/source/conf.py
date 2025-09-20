@@ -6,14 +6,31 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'module_4'
+project = 'GradCafe Analyzer'
 copyright = '2025, Jae Kwon'
 author = 'Jae Kwon'
+release = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+extensions = [
+    "myst_parser",           # allow Markdown (.md)
+    "sphinx.ext.autodoc",    # pull in docstrings
+    "sphinx.ext.napoleon",   # Google/NumPy style docstrings
+    "sphinx.ext.viewcode",   # add [source] links
+]
+
+# napoleon settings (for Google/NumPy docstrings)
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+
+# Optionally hide undoc members
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": False,
+    "show-inheritance": True,
+}
 
 templates_path = ['_templates']
 exclude_patterns = []

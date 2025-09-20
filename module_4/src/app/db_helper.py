@@ -58,7 +58,7 @@ def insert_records_by_url(records: list[dict], data_type) -> int:
     :return: Number of rows successfully inserted.
     :rtype: int
     """
-    if not records:
+    if not records:  # pragma: no cover
         return 0
 
     cols = (

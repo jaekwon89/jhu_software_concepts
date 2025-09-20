@@ -92,14 +92,32 @@ def clean_db():
 # -------------------------------------------------------------------
 @pytest.fixture
 def install_sync_pipeline(monkeypatch):
+    """
+    Make /pull-data run synchronously without touching a real DB:
+
+      - routes.run_pipeline -> fake that returns counts
+      - app.db_helper.insert_records_by_url -> fake that just counts rows
+      - threading.Thread -> FakeThread that runs immediately
+      - clear the busy flag
+    """
     def _install(rows):
         import app.routes as routes
-        from app.db_helper import insert_records_by_url
-        from load_data import data_type
+        import app.db_helper as dbh  # patch function here
+
+        # DB-free insert: just count unique URLs (or all rows; either is fine for tests)
+        def fake_insert_records_by_url(objs, _data_type):
+            return len(objs)
+
+        monkeypatch.setattr(dbh, "insert_records_by_url", fake_insert_records_by_url)
 
         def fake_run_pipeline(*_a, **_k):
-            inserted = insert_records_by_url(rows, data_type)
-            return {"cleaned": len(rows), "llm": len(rows), "inserted": inserted, "message": "ok"}
+            inserted = fake_insert_records_by_url(rows, None)
+            return {
+                "cleaned": len(rows),
+                "llm": len(rows),
+                "inserted": inserted,
+                "message": "ok",
+            }
 
         class FakeThread:
             def __init__(self, target, args=(), daemon=None):

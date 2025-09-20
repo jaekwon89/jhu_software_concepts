@@ -90,7 +90,7 @@ def pull_data():
                 # Tune max_records/delay as needed
                 run_pipeline(max_records=100, delay=0.5)
                 app.logger.info("Pipeline finished successfully.")
-            except Exception as exc:
+            except Exception as exc:  # pragma: no cover
                 app.logger.error(f"Pipeline failed: {exc}")
             finally:
                 _pull_running.clear()

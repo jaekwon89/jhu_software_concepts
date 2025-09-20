@@ -31,3 +31,4 @@ def test_percentages_have_two_decimals(client):
     assert r.status_code == 200
     html = r.get_data(as_text=True)
     assert re.search(r"\b\d{1,3}\.\d{2}\s*%", html), "Expect percent with two decimals like 16.67%"
+
