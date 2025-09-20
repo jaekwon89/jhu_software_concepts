@@ -2,13 +2,9 @@ name: module_4 tests
 
 on:
   push:
-    paths:
-      - "module_4/**"
-      - ".github/workflows/test.yml"
+    paths: ["module_4/**", ".github/workflows/test.yml"]
   pull_request:
-    paths:
-      - "module_4/**"
-      - ".github/workflows/test.yml"
+    paths: ["module_4/**", ".github/workflows/test.yml"]
 
 jobs:
   test:
@@ -21,13 +17,10 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: gradcafe
-        ports:
-          - 5432:5432
+        ports: ["5432:5432"]
         options: >-
           --health-cmd="pg_isready -U postgres -d gradcafe -h localhost"
-          --health-interval=3s
-          --health-timeout=5s
-          --health-retries=40
+          --health-interval=3s --health-timeout=5s --health-retries=40
 
     env:
       PGHOST: 127.0.0.1
@@ -35,6 +28,8 @@ jobs:
       PGUSER: postgres
       PGPASSWORD: postgres
       PGDATABASE: gradcafe
+      # If your code reads DATABASE_URL, this line makes it explicit:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/gradcafe
 
     defaults:
       run:
