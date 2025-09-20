@@ -3,23 +3,25 @@ name: tests
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'module_4/**'
-      - '.github/workflows/test.yml'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'module_4/**'
+  # let you kick it off manually from the Actions tab
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   pytest:
-    # If you want Windows too, change to a matrix (see note below)
-    runs-on: ubuntu-latest
+    name: pytest (${{ matrix.os }} / py${{ matrix.python-version }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.12']  # add '3.11' here too if you want
+    runs-on: ${{ matrix.os }}
 
-    # All `run:` commands below happen inside module_4
+    # run all shell commands from module_4 (works for both OS shells)
     defaults:
       run:
         working-directory: module_4
@@ -31,35 +33,48 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          cache: 'pip'
+          python-version: ${{ matrix.python-version }}
+          cache: pip
           cache-dependency-path: |
             module_4/requirements.txt
 
-      - name: Install dependencies
+      - name: Show Python & pip
+        run: |
+          python -V
+          python -m pip -V
+
+      # Install your dependencies if a requirements.txt exists
+      - name: Install requirements
+        if: ${{ hashFiles('module_4/requirements.txt') != '' }}
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          # Make sure pytest & coverage are available even if not in requirements
-          pip install pytest pytest-cov
+          python -m pip install -r requirements.txt
 
-      - name: Run tests (with coverage)
+      # Make sure pytest & coverage are present even if not in requirements
+      - name: Install test tools
+        run: |
+          python -m pip install pytest pytest-cov
+
+      - name: Run tests with coverage
+        # --cov=src assumes your code is under module_4/src
         run: |
           pytest -q --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml
-          coverage report > coverage_summary.txt || true
+          # save a plain-text summary we can download as proof
+          python -m coverage report -m > coverage_summary.txt
 
+      # Upload artifacts so you can download proof of coverage after the run
       - name: Upload coverage summary
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-summary
+          name: coverage-summary-${{ matrix.os }}
           path: module_4/coverage_summary.txt
-          retention-days: 14
+          retention-days: 21
 
       - name: Upload coverage XML
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-xml
+          name: coverage-xml-${{ matrix.os }}
           path: module_4/coverage.xml
-          retention-days: 14
+          retention-days: 21
