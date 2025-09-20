@@ -38,7 +38,6 @@ PGPASSWORD = os.getenv("PGPASSWORD", "postgres")
 
 DSN = f"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:5432/{PGDATABASE}"
 
-
 # Global connection pool for the app
 pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)
 
