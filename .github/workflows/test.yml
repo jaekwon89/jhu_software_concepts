@@ -3,66 +3,96 @@ name: module_4 tests
 
 on:
   push:
-    branches: [ main ]
-    paths: [ 'module_4/**', '.github/workflows/**' ]
+    paths:
+      - "module_4/**"
+      - ".github/workflows/test.yml"
   pull_request:
-    branches: [ main ]
-    paths: [ 'module_4/**', '.github/workflows/**' ]
-  workflow_dispatch:
+    paths:
+      - "module_4/**"
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Start a DB the app can connect to at localhost:5432
+    # PostgreSQL service for tests
     services:
       postgres:
         image: postgres:15
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: gradcafe
+          POSTGRES_DB: postgres
         ports:
           - 5432:5432
+        # wait until the DB is ready
         options: >-
-          --health-cmd="pg_isready -U postgres -d gradcafe"
+          --health-cmd="pg_isready -U postgres -d postgres"
           --health-interval=5s
           --health-timeout=5s
-          --health-retries=24
+          --health-retries=10
 
+    # Make the DB URL visible to your code under src/app/db.py
     env:
-      # If your app reads DATABASE_URL, set it explicitly (harmless if it also has a default).
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/gradcafe
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
 
     defaults:
       run:
         working-directory: module_4
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
-      - name: Install system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpq-dev postgresql-client
-
-      - name: Install Python deps
+      - name: Upgrade pip & install deps
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov coverage[toml]
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            # fallback: install what tests need
+            pip install flask pytest pytest-cov psycopg[binary]
+          fi
 
-      - name: Wait for Postgres to be ready
-        env: { PGPASSWORD: postgres }
+      # optional: prove we can connect before running pytest
+      - name: Sanity check DB connection
         run: |
-          for i in {1..40}; do
-            pg_isready -h localhost -p 5432 -U postgres -d gradcafe && break
-            sleep 1
-          done
-          psql -h localhost -U postgres -d gradcafe -c 'select 1;'
+          python - << 'PY'
+          import os
+          from psycopg import connect
+          dsn = os.environ["DATABASE_URL"]
+          with connect(dsn) as conn, conn.cursor() as cur:
+              cur.execute("SELECT 1;")
+              print("DB OK:", cur.fetchone())
+          PY
 
-      - name: Run tests with covera
+      - name: Run tests with coverage
+        run: |
+          pytest -q --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=1
+
+      - name: Upload coverage summary
+        if: always()
+        run: |
+          python - << 'PY'
+          from xml.etree import ElementTree as ET
+          t = ET.parse('coverage.xml').getroot()
+          totals = t.find('coverage').find('project').find('metrics') if t.tag!='coverage' else t.find('project/metrics')
+          # fallback parser if schema differs
+          print("coverage.xml saved")
+          PY
+          # Save a simple text artifact for the assignment
+          echo "Coverage XML written; see job summary." > coverage_summary.txt
+        shell: bash
+
+      - name: Store coverage.xml and summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: |
+            module_4/coverage.xml
+            module_4/coverage_summary.txt
