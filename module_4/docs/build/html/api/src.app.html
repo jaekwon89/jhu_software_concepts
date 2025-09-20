@@ -14,6 +14,8 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.app.clean module" href="src.app.clean.html" />
+    <link rel="prev" title="src package" href="src.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -37,18 +39,102 @@
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="src.app.clean.html">src.app.clean module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src.app.db.html">src.app.db module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src.app.db_helper.html">src.app.db_helper module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src.app.pipeline.html">src.app.pipeline module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src.app.query_data.html">src.app.query_data module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src.app.routes.html">src.app.routes module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src.app.scrape.html">src.app.scrape module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src.app.clean.html">src.app.clean module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src.app.clean.html#typical-usage">Typical usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.clean.html#src.app.clean.status"><code class="docutils literal notranslate"><span class="pre">status()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.clean.html#src.app.clean.clean_record"><code class="docutils literal notranslate"><span class="pre">clean_record()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.clean.html#src.app.clean.run_clean"><code class="docutils literal notranslate"><span class="pre">run_clean()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src.app.db.html">src.app.db module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src.app.db.html#schema">Schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.db.html#src.app.db.ensure_table"><code class="docutils literal notranslate"><span class="pre">ensure_table()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src.app.db_helper.html">src.app.db_helper module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src.app.db_helper.html#src.app.db_helper.existing_rids"><code class="docutils literal notranslate"><span class="pre">existing_rids()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.db_helper.html#src.app.db_helper.insert_records_by_url"><code class="docutils literal notranslate"><span class="pre">insert_records_by_url()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.db_helper.html#src.app.db_helper.write_json"><code class="docutils literal notranslate"><span class="pre">write_json()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.db_helper.html#src.app.db_helper.read_json"><code class="docutils literal notranslate"><span class="pre">read_json()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src.app.pipeline.html">src.app.pipeline module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src.app.pipeline.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.pipeline.html#src.app.pipeline.run_llm_hosting"><code class="docutils literal notranslate"><span class="pre">run_llm_hosting()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.pipeline.html#src.app.pipeline.run_pipeline"><code class="docutils literal notranslate"><span class="pre">run_pipeline()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src.app.query_data.html">src.app.query_data module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.count_fall_2025"><code class="docutils literal notranslate"><span class="pre">count_fall_2025()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.percent_international"><code class="docutils literal notranslate"><span class="pre">percent_international()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.avg_scores"><code class="docutils literal notranslate"><span class="pre">avg_scores()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.avg_gpa_american_fall2025"><code class="docutils literal notranslate"><span class="pre">avg_gpa_american_fall2025()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.acceptance_rate_fall2025"><code class="docutils literal notranslate"><span class="pre">acceptance_rate_fall2025()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.avg_gpa_fall2025_acceptances"><code class="docutils literal notranslate"><span class="pre">avg_gpa_fall2025_acceptances()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.count_jhu_masters_cs"><code class="docutils literal notranslate"><span class="pre">count_jhu_masters_cs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.count_gt_phd_accept"><code class="docutils literal notranslate"><span class="pre">count_gt_phd_accept()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.degree_counts_2025"><code class="docutils literal notranslate"><span class="pre">degree_counts_2025()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.top_5_programs"><code class="docutils literal notranslate"><span class="pre">top_5_programs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.query_data.html#src.app.query_data.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src.app.routes.html">src.app.routes module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src.app.routes.html#src.app.routes.index"><code class="docutils literal notranslate"><span class="pre">index()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.routes.html#src.app.routes.analysis"><code class="docutils literal notranslate"><span class="pre">analysis()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.routes.html#src.app.routes.pull_data"><code class="docutils literal notranslate"><span class="pre">pull_data()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.routes.html#src.app.routes.update_analysis"><code class="docutils literal notranslate"><span class="pre">update_analysis()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src.app.scrape.html">src.app.scrape module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src.app.scrape.html#src.app.scrape.GradCafeScraping"><code class="docutils literal notranslate"><span class="pre">GradCafeScraping</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="src.app.scrape.html#src.app.scrape.GradCafeScraping.BASE_URL"><code class="docutils literal notranslate"><span class="pre">GradCafeScraping.BASE_URL</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.app.scrape.html#src.app.scrape.GradCafeScraping.scrape_data"><code class="docutils literal notranslate"><span class="pre">GradCafeScraping.scrape_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.app.scrape.html#src.app.scrape.GradCafeScraping.collect_records"><code class="docutils literal notranslate"><span class="pre">GradCafeScraping.collect_records()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.app.scrape.html#src.app.scrape.GradCafeScraping.parse_results"><code class="docutils literal notranslate"><span class="pre">GradCafeScraping.parse_results()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
-<section id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="module-src.app">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src.app" title="Link to this heading">¶</a></h2>
+<p>Flask application factory.</p>
+<p>This module provides a <code class="docutils literal notranslate"><span class="pre">create_app</span></code> function that:</p>
+<ul class="simple">
+<li><p>Creates and configures a Flask application.</p></li>
+<li><p>Ensures the database schema exists.</p></li>
+<li><p>Registers the main blueprint (<code class="xref py py-mod docutils literal notranslate"><span class="pre">routes</span></code>).</p></li>
+</ul>
+<section id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">app</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_app</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">()</span>
+<span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.create_app">
+<span class="sig-prename descclassname"><span class="pre">src.app.</span></span><span class="sig-name descname"><span class="pre">create_app</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app.html#create_app"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.create_app" title="Link to this definition">¶</a></dt>
+<dd><p>Create and configure the Flask application.</p>
+<ul class="simple">
+<li><p>Sets a development secret key.</p></li>
+<li><p>Ensures the database schema exists.</p></li>
+<li><p>Registers the main blueprint.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A configured Flask application instance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>flask.Flask</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -78,11 +164,23 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="src.html">src package</a><ul>
+      <li>Previous: <a href="src.html" title="previous chapter">src package</a></li>
+      <li>Next: <a href="src.app.clean.html" title="next chapter">src.app.clean module</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

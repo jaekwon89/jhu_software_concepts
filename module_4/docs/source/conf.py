@@ -14,20 +14,25 @@ release = '0.1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
+import os, sys
+# from docs/source -> ../../src  (so Python can import "app.*")
+sys.path.insert(0, os.path.abspath('../../src'))
+
 extensions = [
-    "myst_parser",           # allow Markdown (.md)
-    "sphinx.ext.autodoc",    # pull in docstrings
-    "sphinx.ext.napoleon",   # Google/NumPy style docstrings
-    "sphinx.ext.viewcode",   # add [source] links
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",   # Google/Numpy style, also fine with your reST fields
+    "sphinx.ext.viewcode",
+    "myst_parser",           # you’re already using this
 ]
+autosummary_generate = True
 
-# napoleon settings (for Google/NumPy docstrings)
-napoleon_google_docstring = True
-napoleon_numpy_docstring = True
+# mock heavy or optional deps so autodoc can import modules safely
+autodoc_mock_imports = ["psycopg_pool", "psycopg", "psycopg2", "urllib3", "bs4"]
 
-# Optionally hide undoc members
 autodoc_default_options = {
     "members": True,
+    "member-order": "bysource",
     "undoc-members": False,
     "show-inheritance": True,
 }

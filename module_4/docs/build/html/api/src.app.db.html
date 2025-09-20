@@ -14,6 +14,8 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.app.db_helper module" href="src.app.db_helper.html" />
+    <link rel="prev" title="src.app.clean module" href="src.app.clean.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -31,8 +33,49 @@
 
           <div class="body" role="main">
             
-  <section id="src-app-db-module">
-<h1>src.app.db module<a class="headerlink" href="#src-app-db-module" title="Link to this heading">¶</a></h1>
+  <section id="module-src.app.db">
+<span id="src-app-db-module"></span><h1>src.app.db module<a class="headerlink" href="#module-src.app.db" title="Link to this heading">¶</a></h1>
+<p>Database helper for ensuring the applicants table exists.</p>
+<p>This module provides a global PostgreSQL connection pool and a
+utility to create the <code class="docutils literal notranslate"><span class="pre">applicants</span></code> table if it does not already exist.</p>
+<section id="schema">
+<h2>Schema<a class="headerlink" href="#schema" title="Link to this heading">¶</a></h2>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">applicants</span><span class="p">(</span>
+<span class="w">    </span><span class="n">p_id</span><span class="w"> </span><span class="nb">SERIAL</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">    </span><span class="n">program</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">comments</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">date_added</span><span class="w"> </span><span class="nb">DATE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">url</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">term</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">us_or_international</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">gpa</span><span class="w"> </span><span class="nb">FLOAT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">gre</span><span class="w"> </span><span class="nb">FLOAT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">gre_v</span><span class="w"> </span><span class="nb">FLOAT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">gre_aw</span><span class="w"> </span><span class="nb">FLOAT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">degree</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">llm_generated_program</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">llm_generated_university</span><span class="w"> </span><span class="nb">TEXT</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.db.ensure_table">
+<span class="sig-prename descclassname"><span class="pre">src.app.db.</span></span><span class="sig-name descname"><span class="pre">ensure_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/db.html#ensure_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.db.ensure_table" title="Link to this definition">¶</a></dt>
+<dd><p>Ensure the <code class="docutils literal notranslate"><span class="pre">applicants</span></code> table exists.</p>
+<p>Executes a <code class="docutils literal notranslate"><span class="pre">CREATE</span> <span class="pre">TABLE</span> <span class="pre">IF</span> <span class="pre">NOT</span> <span class="pre">EXISTS</span></code> DDL statement to create
+the table with the expected schema if it does not already exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>NoneType</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -61,11 +104,25 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="src.html">src package</a><ul>
+  <li><a href="src.app.html">src.app package</a><ul>
+      <li>Previous: <a href="src.app.clean.html" title="previous chapter">src.app.clean module</a></li>
+      <li>Next: <a href="src.app.db_helper.html" title="next chapter">src.app.db_helper module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

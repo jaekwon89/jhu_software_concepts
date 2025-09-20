@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.app.routes &#8212; GradCafe Analyzer 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for src.app.routes</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Blueprint</span><span class="p">,</span> 
+    <span class="n">render_template</span><span class="p">,</span> 
+    <span class="n">redirect</span><span class="p">,</span> 
+    <span class="n">url_for</span><span class="p">,</span> 
+    <span class="n">flash</span><span class="p">,</span>
+    <span class="n">jsonify</span><span class="p">,</span>
+    <span class="n">current_app</span>
+<span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">query_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span>
+
+<span class="c1"># Blueprint for this module&#39;s routes.</span>
+<span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># A process-wide flag indicating whether a pull is running.</span>
+<span class="c1"># Using an Event is thread-safe and avoids overlapping runs.</span>
+<span class="n">_pull_running</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="index">
+<a class="viewcode-back" href="../../../api/src.app.routes.html#src.app.routes.index">[docs]</a>
+<span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">index</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Redirect root URL to the analysis page.</span>
+
+<span class="sd">    :return: Redirect response to ``/analysis``.</span>
+<span class="sd">    :rtype: werkzeug.wrappers.response.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s2">&quot;main.analysis&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="analysis">
+<a class="viewcode-back" href="../../../api/src.app.routes.html#src.app.routes.analysis">[docs]</a>
+<span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/analysis&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">analysis</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render the analysis dashboard with precomputed metrics.</span>
+
+<span class="sd">    Queries multiple metrics from the database via :mod:`query_data` and</span>
+<span class="sd">    computes percentages for display.</span>
+
+<span class="sd">    :return: Rendered HTML page with data injected.</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;q1_applicant_count&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">count_fall_2025</span><span class="p">(),</span>
+        <span class="s2">&quot;q2_counts&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">percent_international</span><span class="p">(),</span>
+        <span class="s2">&quot;q2_percent_international&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;q3_avgs&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">avg_scores</span><span class="p">(),</span>
+        <span class="s2">&quot;q4_avg_gpa_us&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">avg_gpa_american_fall2025</span><span class="p">(),</span>
+        <span class="s2">&quot;q5_accept_rate&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">acceptance_rate_fall2025</span><span class="p">(),</span>
+        <span class="s2">&quot;q6_avg_gpa_accept&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">avg_gpa_fall2025_acceptances</span><span class="p">(),</span>
+        <span class="s2">&quot;q7_jhu_ms_cs&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">count_jhu_masters_cs</span><span class="p">(),</span>
+        <span class="s2">&quot;q8_georgetown_phd_cs&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">count_gt_phd_accept</span><span class="p">(),</span>
+        <span class="s2">&quot;q9_degree_counts&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">degree_counts_2025</span><span class="p">(),</span>
+        <span class="s2">&quot;q10_top_programs&quot;</span><span class="p">:</span> <span class="n">query_data</span><span class="o">.</span><span class="n">top_5_programs</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Compute international %</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;q2_counts&quot;</span><span class="p">]</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;international_count&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;us_count&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;other_count&quot;</span><span class="p">]</span>
+    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;q2_percent_international&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;international_count&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="k">if</span> <span class="n">total</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s2">&quot;analysis.html&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">term_label</span><span class="o">=</span><span class="s2">&quot;Fall 2025&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="pull_data">
+<a class="viewcode-back" href="../../../api/src.app.routes.html#src.app.routes.pull_data">[docs]</a>
+<span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/pull-data&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pull_data</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start a background pipeline run to fetch and insert new data.</span>
+
+<span class="sd">    If a pull is already running, flashes a warning. Otherwise, starts a</span>
+<span class="sd">    background thread that calls :func:`pipeline.run_pipeline` inside an</span>
+<span class="sd">    application context.</span>
+
+<span class="sd">    :return: Redirect back to the analysis page with a flash message.</span>
+<span class="sd">    :rtype: werkzeug.wrappers.response.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">_pull_running</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;busy&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span> <span class="mi">409</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">worker</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the pipeline inside an application context.</span>
+
+<span class="sd">        :param app: The Flask application instance.</span>
+<span class="sd">        :type app: flask.Flask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">app</span><span class="o">.</span><span class="n">app_context</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_pull_running</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+                <span class="c1"># Tune max_records/delay as needed</span>
+                <span class="n">run_pipeline</span><span class="p">(</span><span class="n">max_records</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+                <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Pipeline finished successfully.&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pipeline failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">_pull_running</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="c1"># Capture the real Flask app for use in the thread.</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">_get_current_object</span><span class="p">()</span>
+    
+    <span class="c1"># Set the running flag before starting the thread to avoid races.</span>
+    <span class="n">_pull_running</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+    <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">app</span><span class="p">,),</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    
+    <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Pull Data started… scraping new rows and updating the database.&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s2">&quot;main.analysis&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="update_analysis">
+<a class="viewcode-back" href="../../../api/src.app.routes.html#src.app.routes.update_analysis">[docs]</a>
+<span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/update-analysis&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_analysis</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Refresh the analysis page once a pipeline run is finished.</span>
+
+<span class="sd">    If a pull is still running, notifies the user to wait. Otherwise,</span>
+<span class="sd">    reloads data from the database.</span>
+
+<span class="sd">    :return: Redirect back to the analysis page with a flash message.</span>
+<span class="sd">    :rtype: werkzeug.wrappers.response.Response</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the background task is still running.</span>
+    <span class="k">if</span> <span class="n">_pull_running</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+        <span class="c1"># If it is, tell the user to wait and try again.</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&quot;busy&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}),</span> <span class="mi">409</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If it&#39;s finished, refresh the data as usual.</span>
+        <span class="n">flash</span><span class="p">(</span><span class="s2">&quot;Analysis refreshed with the latest database results.&quot;</span><span class="p">,</span> <span class="s2">&quot;success&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s2">&quot;main.analysis&quot;</span><span class="p">))</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">GradCafe Analyzer</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../app.html">src.app</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Jae Kwon.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

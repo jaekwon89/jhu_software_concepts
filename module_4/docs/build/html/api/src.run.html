@@ -14,6 +14,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="src.load_data module" href="src.load_data.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -31,8 +32,87 @@
 
           <div class="body" role="main">
             
-  <section id="src-run-module">
-<h1>src.run module<a class="headerlink" href="#src-run-module" title="Link to this heading">¶</a></h1>
+  <section id="module-src.run">
+<span id="src-run-module"></span><h1>src.run module<a class="headerlink" href="#module-src.run" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.run.cmd_web">
+<span class="sig-prename descclassname"><span class="pre">src.run.</span></span><span class="sig-name descname"><span class="pre">cmd_web</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/src/run.html#cmd_web"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.run.cmd_web" title="Link to this definition">¶</a></dt>
+<dd><p>Start the Flask web application.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>host</strong> (<em>str</em>) – Hostname or IP address to bind (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;0.0.0.0&quot;</span></code>).</p></li>
+<li><p><strong>port</strong> (<em>int</em>) – TCP port for the server.</p></li>
+<li><p><strong>debug</strong> (<em>bool</em>) – Whether to enable Flask debug mode (reloader &amp; debugger).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NoneType</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.run.cmd_pipeline">
+<span class="sig-prename descclassname"><span class="pre">src.run.</span></span><span class="sig-name descname"><span class="pre">cmd_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_records</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/src/run.html#cmd_pipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.run.cmd_pipeline" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the end-to-end data pipeline.</p>
+<p>This triggers scraping, cleaning, LLM-based normalization, and loading.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_records</strong> (<em>int</em>) – Maximum number of records to process.</p></li>
+<li><p><strong>delay</strong> (<em>float</em>) – Delay in seconds between network requests.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NoneType</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.run.main">
+<span class="sig-prename descclassname"><span class="pre">src.run.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/src/run.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.run.main" title="Link to this definition">¶</a></dt>
+<dd><p>Parse CLI arguments and dispatch to the chosen command.</p>
+<section id="subcommands">
+<h2>Subcommands<a class="headerlink" href="#subcommands" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">web</span></code>:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">--host</span></code> (str, default <code class="docutils literal notranslate"><span class="pre">&quot;0.0.0.0&quot;</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--port</span></code> (int, default <code class="docutils literal notranslate"><span class="pre">8080&quot;</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--debug</span></code> (flag)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pipeline</span></code>:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">--max-records</span></code> (int, default <code class="docutils literal notranslate"><span class="pre">100</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--delay</span></code> (float, default <code class="docutils literal notranslate"><span class="pre">0.5</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>If no subcommand is provided, the function defaults to starting the web app.</p>
+<dl class="field-list simple">
+<dt class="field-odd">return<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">rtype<span class="colon">:</span></dt>
+<dd class="field-even"><p>NoneType</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
 </section>
 
 
@@ -61,11 +141,22 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="src.html">src package</a><ul>
+      <li>Previous: <a href="src.load_data.html" title="previous chapter">src.load_data module</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

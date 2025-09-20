@@ -14,6 +14,8 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.app.query_data module" href="src.app.query_data.html" />
+    <link rel="prev" title="src.app.db_helper module" href="src.app.db_helper.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -31,8 +33,84 @@
 
           <div class="body" role="main">
             
-  <section id="src-app-pipeline-module">
-<h1>src.app.pipeline module<a class="headerlink" href="#src-app-pipeline-module" title="Link to this heading">¶</a></h1>
+  <section id="module-src.app.pipeline">
+<span id="src-app-pipeline-module"></span><h1>src.app.pipeline module<a class="headerlink" href="#module-src.app.pipeline" title="Link to this heading">¶</a></h1>
+<p>Pipeline for scraping, cleaning, LLM normalization, and database insertion.</p>
+<p>This module coordinates the following steps:</p>
+<ol class="arabic simple">
+<li><p>Determine which records are already in the database.</p></li>
+<li><p>Scrape new survey results and write them to a temporary JSON file.</p></li>
+<li><p>Run an external LLM-hosting script to normalize the data.</p></li>
+<li><p>Insert normalized records into PostgreSQL.</p></li>
+</ol>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">app.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">run_pipeline</span><span class="p">(</span><span class="n">max_records</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.pipeline.run_llm_hosting">
+<span class="sig-prename descclassname"><span class="pre">src.app.pipeline.</span></span><span class="sig-name descname"><span class="pre">run_llm_hosting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/src/app/pipeline.html#run_llm_hosting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.pipeline.run_llm_hosting" title="Link to this definition">¶</a></dt>
+<dd><p>Run the external LLM-hosting script to clean/normalize JSON.</p>
+<p>Calls <code class="docutils literal notranslate"><span class="pre">llm_hosting/app.py</span></code> as a subprocess, passing input and output
+file paths. Logs and re-raises any subprocess errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_path</strong> (<em>pathlib.Path</em>) – Path to the input JSON file.</p></li>
+<li><p><strong>out_path</strong> (<em>pathlib.Path</em>) – Path where the LLM-normalized JSON will be written.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NoneType</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>subprocess.CalledProcessError</strong> – If the external script fails.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.pipeline.run_pipeline">
+<span class="sig-prename descclassname"><span class="pre">src.app.pipeline.</span></span><span class="sig-name descname"><span class="pre">run_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_records</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/src/app/pipeline.html#run_pipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.pipeline.run_pipeline" title="Link to this definition">¶</a></dt>
+<dd><p>Run the full scraping → cleaning → LLM → database pipeline.</p>
+<section id="steps">
+<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Skip already-existing records.</p></li>
+<li><p>Scrape new rows and save to <code class="docutils literal notranslate"><span class="pre">CLEAN_JSON</span></code>.</p></li>
+<li><p>Run LLM-hosting to produce <code class="docutils literal notranslate"><span class="pre">FINAL_JSON</span></code>.</p></li>
+<li><p>Insert normalized rows into the database.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">param max_records<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Maximum number of new records to scrape.</p>
+</dd>
+<dt class="field-even">type max_records<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+<dt class="field-odd">param delay<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Delay in seconds between scrape requests.</p>
+</dd>
+<dt class="field-even">type delay<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+<dt class="field-odd">return<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Summary dictionary with counts and status message.</p>
+</dd>
+<dt class="field-even">rtype<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
 </section>
 
 
@@ -61,11 +139,25 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="src.html">src package</a><ul>
+  <li><a href="src.app.html">src.app package</a><ul>
+      <li>Previous: <a href="src.app.db_helper.html" title="previous chapter">src.app.db_helper module</a></li>
+      <li>Next: <a href="src.app.query_data.html" title="next chapter">src.app.query_data module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

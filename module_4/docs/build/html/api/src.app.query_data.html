@@ -14,6 +14,8 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.app.routes module" href="src.app.routes.html" />
+    <link rel="prev" title="src.app.pipeline module" href="src.app.pipeline.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -31,8 +33,181 @@
 
           <div class="body" role="main">
             
-  <section id="src-app-query-data-module">
-<h1>src.app.query_data module<a class="headerlink" href="#src-app-query-data-module" title="Link to this heading">¶</a></h1>
+  <section id="module-src.app.query_data">
+<span id="src-app-query-data-module"></span><h1>src.app.query_data module<a class="headerlink" href="#module-src.app.query_data" title="Link to this heading">¶</a></h1>
+<p>Predefined database queries for applicant statistics.</p>
+<p>This module provides query functions for the <code class="docutils literal notranslate"><span class="pre">applicants</span></code> table
+in PostgreSQL. Each function opens a pooled connection, executes
+a SELECT, and returns a Python value or structure.</p>
+<p>Queries include:
+1. Applicant count (Fall 2025)
+2. Citizenship counts
+3. Average GPA/GRE scores
+4. Avg GPA for Americans in Fall 2025
+5. Acceptance rate in Fall 2025
+6. Avg GPA of accepted applicants in Fall 2025
+7. Count of JHU Masters in CS
+8. Count of Georgetown PhD CS acceptances (2025)
+9. Degree counts in 2025
+10. Top 5 programs in 2025</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.count_fall_2025">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">count_fall_2025</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#count_fall_2025"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.count_fall_2025" title="Link to this definition">¶</a></dt>
+<dd><p>Count the number of applicants for Fall 2025.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of Fall 2025 applicants.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.percent_international">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">percent_international</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#percent_international"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.percent_international" title="Link to this definition">¶</a></dt>
+<dd><p>Count applicants by citizenship type.</p>
+<p>Categories: International, American, Other.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Counts by category.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[str, int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.avg_scores">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">avg_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#avg_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.avg_scores" title="Link to this definition">¶</a></dt>
+<dd><p>Compute average GPA and GRE scores.</p>
+<p>GPA is valid if between 0.01 and 4.3.
+GRE/GRE_V are valid if between 130 and 170.
+GRE_AW is valid if between 0.01 and 6.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary of averages.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[str, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.avg_gpa_american_fall2025">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">avg_gpa_american_fall2025</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#avg_gpa_american_fall2025"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.avg_gpa_american_fall2025" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate average GPA for American applicants in Fall 2025.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Average GPA (or None if no valid records).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.acceptance_rate_fall2025">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">acceptance_rate_fall2025</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#acceptance_rate_fall2025"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.acceptance_rate_fall2025" title="Link to this definition">¶</a></dt>
+<dd><p>Compute acceptance rate for Fall 2025.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Acceptance rate (percentage).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.avg_gpa_fall2025_acceptances">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">avg_gpa_fall2025_acceptances</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#avg_gpa_fall2025_acceptances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.avg_gpa_fall2025_acceptances" title="Link to this definition">¶</a></dt>
+<dd><p>Compute average GPA of accepted Fall 2025 applicants.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Average GPA or None.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.count_jhu_masters_cs">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">count_jhu_masters_cs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#count_jhu_masters_cs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.count_jhu_masters_cs" title="Link to this definition">¶</a></dt>
+<dd><p>Count JHU Masters in Computer Science applicants.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Count of applicants.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.count_gt_phd_accept">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">count_gt_phd_accept</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#count_gt_phd_accept"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.count_gt_phd_accept" title="Link to this definition">¶</a></dt>
+<dd><p>Count Georgetown PhD Computer Science acceptances in 2025.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Count of accepted applicants.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.degree_counts_2025">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">degree_counts_2025</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#degree_counts_2025"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.degree_counts_2025" title="Link to this definition">¶</a></dt>
+<dd><p>Return counts of applicants by degree for 2025.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of (degree, count) tuples.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[tuple[str, int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.top_5_programs">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">top_5_programs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#top_5_programs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.top_5_programs" title="Link to this definition">¶</a></dt>
+<dd><p>Return top 5 programs by number of 2025 applicants.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of (program, count) tuples.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[tuple[str, int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.query_data.main">
+<span class="sig-prename descclassname"><span class="pre">src.app.query_data.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/query_data.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.query_data.main" title="Link to this definition">¶</a></dt>
+<dd><p>Run all queries and print formatted results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>NoneType</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -61,11 +236,25 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="src.html">src package</a><ul>
+  <li><a href="src.app.html">src.app package</a><ul>
+      <li>Previous: <a href="src.app.pipeline.html" title="previous chapter">src.app.pipeline module</a></li>
+      <li>Next: <a href="src.app.routes.html" title="next chapter">src.app.routes module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

@@ -14,6 +14,8 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.app.scrape module" href="src.app.scrape.html" />
+    <link rel="prev" title="src.app.query_data module" href="src.app.query_data.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -31,8 +33,71 @@
 
           <div class="body" role="main">
             
-  <section id="src-app-routes-module">
-<h1>src.app.routes module<a class="headerlink" href="#src-app-routes-module" title="Link to this heading">¶</a></h1>
+  <section id="module-src.app.routes">
+<span id="src-app-routes-module"></span><h1>src.app.routes module<a class="headerlink" href="#module-src.app.routes" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.routes.index">
+<span class="sig-prename descclassname"><span class="pre">src.app.routes.</span></span><span class="sig-name descname"><span class="pre">index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/routes.html#index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.routes.index" title="Link to this definition">¶</a></dt>
+<dd><p>Redirect root URL to the analysis page.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Redirect response to <code class="docutils literal notranslate"><span class="pre">/analysis</span></code>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>werkzeug.wrappers.response.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.routes.analysis">
+<span class="sig-prename descclassname"><span class="pre">src.app.routes.</span></span><span class="sig-name descname"><span class="pre">analysis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/routes.html#analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.routes.analysis" title="Link to this definition">¶</a></dt>
+<dd><p>Render the analysis dashboard with precomputed metrics.</p>
+<p>Queries multiple metrics from the database via <code class="xref py py-mod docutils literal notranslate"><span class="pre">query_data</span></code> and
+computes percentages for display.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Rendered HTML page with data injected.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.routes.pull_data">
+<span class="sig-prename descclassname"><span class="pre">src.app.routes.</span></span><span class="sig-name descname"><span class="pre">pull_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/routes.html#pull_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.routes.pull_data" title="Link to this definition">¶</a></dt>
+<dd><p>Start a background pipeline run to fetch and insert new data.</p>
+<p>If a pull is already running, flashes a warning. Otherwise, starts a
+background thread that calls <code class="xref py py-func docutils literal notranslate"><span class="pre">pipeline.run_pipeline()</span></code> inside an
+application context.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Redirect back to the analysis page with a flash message.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>werkzeug.wrappers.response.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.app.routes.update_analysis">
+<span class="sig-prename descclassname"><span class="pre">src.app.routes.</span></span><span class="sig-name descname"><span class="pre">update_analysis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/routes.html#update_analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.routes.update_analysis" title="Link to this definition">¶</a></dt>
+<dd><p>Refresh the analysis page once a pipeline run is finished.</p>
+<p>If a pull is still running, notifies the user to wait. Otherwise,
+reloads data from the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Redirect back to the analysis page with a flash message.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>werkzeug.wrappers.response.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -61,11 +126,25 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="src.html">src package</a><ul>
+  <li><a href="src.app.html">src.app package</a><ul>
+      <li>Previous: <a href="src.app.query_data.html" title="previous chapter">src.app.query_data module</a></li>
+      <li>Next: <a href="src.app.scrape.html" title="next chapter">src.app.scrape module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

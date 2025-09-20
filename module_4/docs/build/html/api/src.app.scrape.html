@@ -14,6 +14,8 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.load_data module" href="src.load_data.html" />
+    <link rel="prev" title="src.app.routes module" href="src.app.routes.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -31,8 +33,84 @@
 
           <div class="body" role="main">
             
-  <section id="src-app-scrape-module">
-<h1>src.app.scrape module<a class="headerlink" href="#src-app-scrape-module" title="Link to this heading">¶</a></h1>
+  <section id="module-src.app.scrape">
+<span id="src-app-scrape-module"></span><h1>src.app.scrape module<a class="headerlink" href="#module-src.app.scrape" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.app.scrape.GradCafeScraping">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.app.scrape.</span></span><span class="sig-name descname"><span class="pre">GradCafeScraping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://www.thegradcafe.com'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/scrape.html#GradCafeScraping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.scrape.GradCafeScraping" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Scraper for TheGradCafe survey/results pages.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.app.scrape.GradCafeScraping.BASE_URL">
+<span class="sig-name descname"><span class="pre">BASE_URL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://www.thegradcafe.com'</span></em><a class="headerlink" href="#src.app.scrape.GradCafeScraping.BASE_URL" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.scrape.GradCafeScraping.scrape_data">
+<span class="sig-name descname"><span class="pre">scrape_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/survey/'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/scrape.html#GradCafeScraping.scrape_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.scrape.GradCafeScraping.scrape_data" title="Link to this definition">¶</a></dt>
+<dd><p>Fetch a page and return a BeautifulSoup parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – Path under the base URL to fetch.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parsed HTML document.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bs4.BeautifulSoup</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.scrape.GradCafeScraping.collect_records">
+<span class="sig-name descname"><span class="pre">collect_records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_records</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">150</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_rids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/scrape.html#GradCafeScraping.collect_records"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.scrape.GradCafeScraping.collect_records" title="Link to this definition">¶</a></dt>
+<dd><p>Collect records by walking the survey listing pages.</p>
+<p>For each listing page (<code class="docutils literal notranslate"><span class="pre">/survey/</span></code> then <code class="docutils literal notranslate"><span class="pre">/survey/?page=N</span></code>), extract
+result IDs, visit each detail page, parse fields, and accumulate a list
+of records until <code class="docutils literal notranslate"><span class="pre">max_records</span></code> is reached.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_records</strong> (<em>int</em>) – Maximum number of records to collect.</p></li>
+<li><p><strong>delay</strong> (<em>float</em>) – Politeness delay (seconds) between requests.</p></li>
+<li><p><strong>skip_rids</strong> (<em>set</em><em>[</em><em>str</em><em>] or </em><em>None</em>) – Set of result IDs (strings) to skip.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of parsed result dictionaries.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.app.scrape.GradCafeScraping.parse_results">
+<span class="sig-name descname"><span class="pre">parse_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/app/scrape.html#GradCafeScraping.parse_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.app.scrape.GradCafeScraping.parse_results" title="Link to this definition">¶</a></dt>
+<dd><p>Scrape a single result detail page and return parsed fields.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rid</strong> (<em>str</em>) – Result ID (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;123456&quot;</span></code>).</p></li>
+<li><p><strong>meta</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>dict</em><em>] or </em><em>str</em>) – Optional metadata mapping produced by listing parsing,
+of the form <code class="docutils literal notranslate"><span class="pre">{rid:</span> <span class="pre">{&quot;date_added&quot;:</span> <span class="pre">str,</span> <span class="pre">&quot;term&quot;:</span> <span class="pre">str}}</span></code>. If not
+provided or mismatched, date/term are left as empty strings unless
+found on the detail page.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary with normalized fields (program, degree, scores, etc.).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -61,11 +139,25 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="src.html">src package</a><ul>
+  <li><a href="src.app.html">src.app package</a><ul>
+      <li>Previous: <a href="src.app.routes.html" title="previous chapter">src.app.routes module</a></li>
+      <li>Next: <a href="src.load_data.html" title="next chapter">src.load_data module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

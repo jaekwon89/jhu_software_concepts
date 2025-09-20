@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.load_data &#8212; GradCafe Analyzer 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for src.load_data</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span><span class="o">,</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">psycopg_pool</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">psycopg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="c1"># Configuration</span>
+<span class="n">DSN</span> <span class="o">=</span> <span class="s2">&quot;postgresql://postgres:postgres@localhost:5432/gradcafe&quot;</span>
+<span class="n">JSON_PATH</span> <span class="o">=</span> <span class="s2">&quot;../module_2/llm_extend_applicant_data.json&quot;</span>
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Load Data</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<div class="viewcode-block" id="load_json">
+<a class="viewcode-back" href="../../api/src.load_data.html#src.load_data.load_json">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_json</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">JSON_PATH</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load JSON applicant data from file.</span>
+
+<span class="sd">    :param path: Path to the JSON file.</span>
+<span class="sd">    :type path: str</span>
+<span class="sd">    :return: Parsed JSON data as a Python object.</span>
+<span class="sd">    :rtype: list[dict]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Data Type: TEXT </span>
+<span class="c1"># Normalize string format</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<div class="viewcode-block" id="norm_str">
+<a class="viewcode-back" href="../../api/src.load_data.html#src.load_data.norm_str">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">norm_str</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize a value into a clean string.</span>
+
+<span class="sd">    - Converts None → ``&quot;&quot;``</span>
+<span class="sd">    - Strips leading/trailing whitespace</span>
+
+<span class="sd">    :param value: Input value (any type).</span>
+<span class="sd">    :type value: Any</span>
+<span class="sd">    :return: Normalized string.</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
+
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Data Type: DATE</span>
+<span class="c1"># Date format</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<div class="viewcode-block" id="to_date">
+<a class="viewcode-back" href="../../api/src.load_data.html#src.load_data.to_date">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_date</span><span class="p">(</span><span class="n">added_date</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a date string to a ``datetime.date``.</span>
+
+<span class="sd">    Expects format like ``&quot;January 1, 2025&quot;``.</span>
+
+<span class="sd">    :param added_date: Raw date string.</span>
+<span class="sd">    :type added_date: str</span>
+<span class="sd">    :return: Date object, or empty string if invalid.</span>
+<span class="sd">    :rtype: datetime.date or str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">added_date</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    
+    <span class="n">added_date_s</span> <span class="o">=</span> <span class="n">added_date</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">added_date_s</span><span class="p">,</span> <span class="s2">&quot;%B </span><span class="si">%d</span><span class="s2">, %Y&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Date Type: FLOAT</span>
+<span class="c1"># Float format for scores</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<div class="viewcode-block" id="to_float">
+<a class="viewcode-back" href="../../api/src.load_data.html#src.load_data.to_float">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_float</span><span class="p">(</span><span class="n">score</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a score to float.</span>
+
+<span class="sd">    Handles numeric strings, removes &quot;GPA&quot; prefix, ignores empty/invalid values.</span>
+
+<span class="sd">    :param score: Raw score input.</span>
+<span class="sd">    :type score: str or float or None</span>
+<span class="sd">    :return: Float score or None.</span>
+<span class="sd">    :rtype: float or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">score</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">score</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="n">score_s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">score</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;GPA&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">score_f</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">score_s</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">score_f</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">score_f</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Table Creation </span>
+<span class="c1"># Create table if not exists</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<div class="viewcode-block" id="ensure_table">
+<a class="viewcode-back" href="../../api/src.load_data.html#src.load_data.ensure_table">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ensure_table</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure the ``applicants`` table exists in PostgreSQL.</span>
+
+<span class="sd">    :param conn: Database connection.</span>
+<span class="sd">    :type conn: psycopg.Connection</span>
+<span class="sd">    :return: None</span>
+<span class="sd">    :rtype: NoneType</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ddl</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    CREATE TABLE IF NOT EXISTS applicants(</span>
+<span class="s2">      p_id SERIAL PRIMARY KEY,</span>
+<span class="s2">      program TEXT,</span>
+<span class="s2">      comments TEXT,</span>
+<span class="s2">      date_added DATE,</span>
+<span class="s2">      url TEXT UNIQUE,</span>
+<span class="s2">      status TEXT,</span>
+<span class="s2">      term TEXT,</span>
+<span class="s2">      us_or_international TEXT,</span>
+<span class="s2">      gpa FLOAT,</span>
+<span class="s2">      gre FLOAT,</span>
+<span class="s2">      gre_v FLOAT,</span>
+<span class="s2">      gre_aw FLOAT,</span>
+<span class="s2">      degree TEXT,</span>
+<span class="s2">      llm_generated_program TEXT,</span>
+<span class="s2">      llm_generated_university TEXT</span>
+<span class="s2">    );</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">ddl</span><span class="p">)</span></div>
+
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Data Type SETUP</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<div class="viewcode-block" id="data_type">
+<a class="viewcode-back" href="../../api/src.load_data.html#src.load_data.data_type">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">data_type</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize and convert a single applicant record.</span>
+
+<span class="sd">    :param data: Dictionary of applicant fields.</span>
+<span class="sd">    :type data: dict</span>
+<span class="sd">    :return: List of normalized values in correct order for insertion.</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">norm_str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;program&quot;</span><span class="p">)),</span>
+        <span class="n">norm_str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;comments&quot;</span><span class="p">)),</span>
+        <span class="n">to_date</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date_added&quot;</span><span class="p">)),</span>
+        <span class="n">norm_str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">)),</span>
+        <span class="n">norm_str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)),</span>
+        <span class="n">norm_str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;term&quot;</span><span class="p">)),</span>
+        <span class="n">norm_str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;US/International&quot;</span><span class="p">)),</span>
+        <span class="n">to_float</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GPA&quot;</span><span class="p">)),</span>
+        <span class="n">to_float</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GRE&quot;</span><span class="p">)),</span>
+        <span class="n">to_float</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GRE_V&quot;</span><span class="p">)),</span>
+        <span class="n">to_float</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GRE_AW&quot;</span><span class="p">)),</span>
+        <span class="n">norm_str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Degree&quot;</span><span class="p">)),</span>
+        <span class="n">norm_str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;llm-generated-program&quot;</span><span class="p">)),</span>
+        <span class="n">norm_str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;llm-generated-university&quot;</span><span class="p">)),</span>
+    <span class="p">]</span></div>
+
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Main</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../api/src.load_data.html#src.load_data.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load JSON file and insert all rows into PostgreSQL.</span>
+
+<span class="sd">    Steps</span>
+<span class="sd">    -----</span>
+<span class="sd">    1. Load JSON data</span>
+<span class="sd">    2. Ensure ``applicants`` table exists</span>
+<span class="sd">    3. Bulk load rows using ``COPY`` for efficiency</span>
+<span class="sd">    4. Commit transaction</span>
+
+<span class="sd">    :return: None</span>
+<span class="sd">    :rtype: NoneType</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_json</span><span class="p">()</span>  <span class="c1"># Load JSON</span>
+
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">psycopg_pool</span><span class="o">.</span><span class="n">ConnectionPool</span><span class="p">(</span><span class="n">DSN</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">pool</span><span class="o">.</span><span class="n">connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+        <span class="n">ensure_table</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">copy_sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                COPY applicants (</span>
+<span class="s2">                    program, comments, date_added, url, status, term,</span>
+<span class="s2">                    us_or_international, gpa, gre, gre_v, gre_aw, degree,</span>
+<span class="s2">                    llm_generated_program, llm_generated_university</span>
+<span class="s2">                ) FROM STDIN</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+            <span class="k">with</span> <span class="n">cur</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">copy_sql</span><span class="p">)</span> <span class="k">as</span> <span class="n">cp</span><span class="p">:</span>  <span class="c1"># Faster than using INSERT</span>
+                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">cp</span><span class="o">.</span><span class="n">write_row</span><span class="p">(</span><span class="n">data_type</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Done. Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2"> rows&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+    
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">GradCafe Analyzer</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Jae Kwon.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
