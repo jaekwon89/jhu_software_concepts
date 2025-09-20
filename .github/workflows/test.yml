@@ -33,6 +33,11 @@ jobs:
       # This variable tells conftest.py to enable real database tests.
       CI: "true"
       PYTHON_VERSION: "3.12"
+      # These are needed for the psql command to connect.
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: gradcafe
+
 
     defaults:
       run:
@@ -56,8 +61,22 @@ jobs:
             pip install -r requirements.txt
           fi
 
+      - name: Check Environment and Connectivity
+        run: |
+          # Install the PostgreSQL client
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          
+          # Print environment variables to verify they are set
+          echo "PGHOST is: $PGHOST"
+          echo "CI is: $CI"
+          
+          # Attempt to connect to the database and run a simple query
+          echo "Attempting to connect to PostgreSQL..."
+          psql -c "SELECT 1;"
+          echo "PostgreSQL connection successful!"
+
       - name: Run tests with coverage
-        run: pytest
+        run: pytest -q --cov=src --cov-report=term-missing --cov-fail-under=100 --cov-config=.coveragerc
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
