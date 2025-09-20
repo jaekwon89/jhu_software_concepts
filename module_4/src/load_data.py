@@ -7,6 +7,7 @@ from datetime import datetime
 DSN = "postgresql://postgres:postgres@localhost:5432/gradcafe"
 JSON_PATH = "../module_2/llm_extend_applicant_data.json"
 
+
 # ---------------------------------------------------------------------
 # Load Data
 # ---------------------------------------------------------------------
@@ -22,8 +23,9 @@ def load_json(path=JSON_PATH):
         data = json.load(f)
     return data
 
+
 # ---------------------------------------------------------------------
-# Data Type: TEXT 
+# Data Type: TEXT
 # Normalize string format
 # ---------------------------------------------------------------------
 def norm_str(value):
@@ -42,6 +44,7 @@ def norm_str(value):
     else:
         return str(value).strip()
 
+
 # ---------------------------------------------------------------------
 # Data Type: DATE
 # Date format
@@ -58,12 +61,13 @@ def to_date(added_date):
     """
     if not added_date:
         return ""
-    
+
     added_date_s = added_date.strip()
     try:
         return datetime.strptime(added_date_s, "%B %d, %Y").date()
     except ValueError:
         return ""
+
 
 # ---------------------------------------------------------------------
 # Date Type: FLOAT
@@ -81,7 +85,7 @@ def to_float(score):
     """
     if score is None or score == "":
         return None
-    
+
     score_s = str(score).replace("GPA", "").strip()
     try:
         score_f = float(score_s)
@@ -92,8 +96,9 @@ def to_float(score):
     except Exception:
         return None
 
+
 # ---------------------------------------------------------------------
-# Table Creation 
+# Table Creation
 # Create table if not exists
 # ---------------------------------------------------------------------
 def ensure_table(conn):
@@ -126,6 +131,7 @@ def ensure_table(conn):
     with conn.cursor() as cur:
         cur.execute(ddl)
 
+
 # ---------------------------------------------------------------------
 # Data Type SETUP
 # ---------------------------------------------------------------------
@@ -153,6 +159,7 @@ def data_type(data: dict):
         norm_str(data.get("llm-generated-program")),
         norm_str(data.get("llm-generated-university")),
     ]
+
 
 # ---------------------------------------------------------------------
 # Main
@@ -191,7 +198,6 @@ def main():
 
     print(f"Done. Loaded {len(data)} rows")
 
+
 if __name__ == "__main__":
     main()
-    
-

@@ -1,15 +1,14 @@
-
 from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent        
+HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
-    sys.path.insert(0, str(HERE))             
+    sys.path.insert(0, str(HERE))
 
-from app import create_app                    # app/__init__.py must define create_app
-from app.pipeline import run_pipeline         # Run pipeline
+from app import create_app  # app/__init__.py must define create_app
+from app.pipeline import run_pipeline  # Run pipeline
 
 
 def cmd_web(host: str, port: int, debug: bool) -> None:
@@ -82,8 +81,10 @@ def main() -> None:
     else:
         # default: web
         # allow `python run.py` (no subcommand) to start the server
-        ns = args if args.cmd == "web" else argparse.Namespace(
-            host="0.0.0.0", port=8080, debug=True
+        ns = (
+            args
+            if args.cmd == "web"
+            else argparse.Namespace(host="0.0.0.0", port=8080, debug=True)
         )
         cmd_web(ns.host, ns.port, ns.debug)
 

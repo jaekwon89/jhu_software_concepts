@@ -36,6 +36,7 @@ CANON_PROGS_PATH = os.getenv("CANON_PROGS_PATH", "canon_programs.txt")
 # Precompiled, non-greedy JSON object matcher to tolerate chatter around JSON
 JSON_OBJ_RE = re.compile(r"\{.*?\}", re.DOTALL)
 
+
 # ---------------- Canonical lists + abbrev maps ----------------
 def _read_lines(path: str) -> List[str]:
     """Read non-empty, stripped lines from a file (UTF-8)."""
@@ -79,7 +80,7 @@ SYSTEM_PROMPT = (
     '- Expand obvious abbreviations (e.g., "McG" -> "McGill University", '
     '"UBC" -> "University of British Columbia").\n'
     "- Use Title Case for program; use official capitalization for university "
-    "names (e.g., \"University of X\").\n"
+    'names (e.g., "University of X").\n'
     '- Ensure correct spelling (e.g., "McGill", not "McGiill").\n'
     '- If university cannot be inferred, return "Unknown".\n\n'
     "Return JSON ONLY with keys:\n"

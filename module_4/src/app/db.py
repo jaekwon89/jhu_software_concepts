@@ -26,8 +26,9 @@ Schema
        llm_generated_university TEXT
    );
 """
+
 import psycopg_pool
-import os # Import the os module
+import os  # Import the os module
 
 # --- Configuration ---
 # Build the DSN from environment variables, with localhost as a fallback.
@@ -40,6 +41,7 @@ DSN = f"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:5432/{PGDATABASE}"
 
 # Global connection pool for the app
 pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)
+
 
 def ensure_table():
     """Ensure the ``applicants`` table exists."""
@@ -64,6 +66,6 @@ def ensure_table():
     """
 
     with pool.connection() as conn:
-       with conn.cursor() as cur:
-          cur.execute(ddl)
-          conn.commit()
+        with conn.cursor() as cur:
+            cur.execute(ddl)
+            conn.commit()

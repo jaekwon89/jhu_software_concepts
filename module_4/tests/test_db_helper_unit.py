@@ -7,6 +7,7 @@ import app.db_helper as dh
 
 # ---------- tiny fake DB plumbing ----------
 
+
 class _FakeCursor:
     def __init__(self):
         self._seen_urls = set()
@@ -87,6 +88,7 @@ def _patch_pool_and_table(monkeypatch, preload_urls=None):
 
 # ---------- tests ----------
 
+
 @pytest.mark.db
 def test_read_json_reads_jsonl(tmp_path):
     """read_json should read one JSON object per line (JSONL)."""
@@ -126,8 +128,8 @@ def test_existing_rids_parses_ids_from_urls_and_ignores_empty(monkeypatch):
       - exercising the 'if url:' guard with None and '' (ignored)
     """
     preload = [
-        None,                                  # ignored by 'if url:'
-        "",                                    # ignored by 'if url:'
+        None,  # ignored by 'if url:'
+        "",  # ignored by 'if url:'
         "https://www.thegradcafe.com/result/123",
         "https://www.thegradcafe.com/result/42?utm=x",
         "https://www.thegradcafe.com/result/9999",
@@ -154,12 +156,16 @@ def test_insert_records_by_url_counts_only_unique_and_commits(monkeypatch):
     def data_type(rec):
         return [
             rec.get("program"),
-            None,          # comments
-            None,          # date_added
-            rec["url"],    # url (index 3)
-            None,          # status
+            None,  # comments
+            None,  # date_added
+            rec["url"],  # url (index 3)
+            None,  # status
             rec.get("term"),
-            None, None, None, None, None,  # us_or_international, gpa, gre, gre_v, gre_aw, degree
+            None,
+            None,
+            None,
+            None,
+            None,  # us_or_international, gpa, gre, gre_v, gre_aw, degree
             None,
             rec.get("llm_generated_program"),
             rec.get("llm_generated_university"),

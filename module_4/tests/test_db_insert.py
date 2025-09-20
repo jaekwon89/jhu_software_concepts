@@ -4,6 +4,7 @@ import app.db as db
 from app.db_helper import insert_records_by_url
 from load_data import data_type
 
+
 def _fake_llm_rows():
     return [
         {
@@ -14,7 +15,10 @@ def _fake_llm_rows():
             "status": "Accepted on 09/05/2025",
             "term": "Fall 2025",
             "US/International": "International",
-            "GRE": "170", "GRE_V": "165", "GRE_AW": "5.0", "GPA": "GPA 3.90",
+            "GRE": "170",
+            "GRE_V": "165",
+            "GRE_AW": "5.0",
+            "GPA": "GPA 3.90",
             "Degree": "Masters",
             "llm-generated-program": "Computer Science",
             "llm-generated-university": "Johns Hopkins University",
@@ -27,26 +31,39 @@ def _fake_llm_rows():
             "status": "Rejected on 09/06/2025",
             "term": "Fall 2025",
             "US/International": "American",
-            "GRE": "168", "GRE_V": "162", "GRE_AW": "4.5", "GPA": "GPA 3.70",
+            "GRE": "168",
+            "GRE_V": "162",
+            "GRE_AW": "4.5",
+            "GPA": "GPA 3.70",
             "Degree": "PhD",
             "llm-generated-program": "Computer Science",
             "llm-generated-university": "Georgetown University",
         },
     ]
 
+
 def _install_sync_worker(monkeypatch, rows):
     def fake_run_pipeline(*_a, **_k):
         inserted = insert_records_by_url(rows, data_type)
-        return {"cleaned": len(rows), "llm": len(rows), "inserted": inserted, "message": "ok"}
+        return {
+            "cleaned": len(rows),
+            "llm": len(rows),
+            "inserted": inserted,
+            "message": "ok",
+        }
+
     monkeypatch.setattr(routes, "run_pipeline", fake_run_pipeline)
 
     class FakeThread:
         def __init__(self, target, args=(), daemon=None):
             self._target, self._args = target, args
-        def start(self): self._target(*self._args)
+
+        def start(self):
+            self._target(*self._args)
 
     monkeypatch.setattr(routes.threading, "Thread", FakeThread)
     routes._pull_running.clear()
+
 
 @pytest.fixture(autouse=True)
 def _truncate_table():
@@ -58,6 +75,7 @@ def _truncate_table():
     with db.pool.connection() as conn, conn.cursor() as cur:
         cur.execute("TRUNCATE TABLE applicants;")
         conn.commit()
+
 
 # a) Insert on pull
 @pytest.mark.db
@@ -87,6 +105,7 @@ def test_insert_on_pull(client, monkeypatch):
         """)
         assert cur.fetchone()[0] == len(rows)
 
+
 # b) Idempotency
 @pytest.mark.db
 def test_idempotency_no_duplicates_on_second_pull(client, monkeypatch):
@@ -102,6 +121,7 @@ def test_idempotency_no_duplicates_on_second_pull(client, monkeypatch):
         cur.execute("SELECT COUNT(*) FROM applicants;")
         assert cur.fetchone()[0] == len(rows)  # still 2
 
+
 # c) Simple query returns expected keys
 @pytest.mark.db
 def test_simple_query_function_returns_expected_keys(client, monkeypatch):
@@ -110,6 +130,7 @@ def test_simple_query_function_returns_expected_keys(client, monkeypatch):
     client.post("/pull-data", follow_redirects=True)
 
     import app.query_data as qd
+
     result = qd.percent_international()
     assert set(result.keys()) == {"international_count", "us_count", "other_count"}
     assert result["international_count"] == 1

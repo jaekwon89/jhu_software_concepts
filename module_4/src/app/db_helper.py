@@ -8,6 +8,7 @@ This module provides helpers for:
 
 It depends on the global PostgreSQL connection pool defined in :mod:`db`.
 """
+
 from pathlib import Path
 import json
 from .db import pool, ensure_table
@@ -16,6 +17,7 @@ from load_data import data_type
 # Temp directory for intermediate files.
 TMP_DIR = Path(__file__).resolve().parent / "tmp"
 TMP_DIR.mkdir(exist_ok=True)
+
 
 # Return rids already stored (derived from URL).
 def existing_rids() -> set[str]:
@@ -35,14 +37,15 @@ def existing_rids() -> set[str]:
         cur.execute("SELECT url FROM applicants")
         for row in cur.fetchall():
             urls.append(row[0])
-    
+
     for url in urls:
         if url:
             rid = url.rsplit("/", 1)[-1]  # Split to get the ID
             rids.add(rid)
-    
+
     return rids
-    
+
+
 # Insert records using a unique URL, ignoring duplicates.
 def insert_records_by_url(records: list[dict], data_type) -> int:
     """Insert applicant records into the database.
@@ -62,9 +65,20 @@ def insert_records_by_url(records: list[dict], data_type) -> int:
         return 0
 
     cols = (
-        "program","comments","date_added","url","status","term",
-        "us_or_international","gpa","gre","gre_v","gre_aw","degree",
-        "llm_generated_program","llm_generated_university"
+        "program",
+        "comments",
+        "date_added",
+        "url",
+        "status",
+        "term",
+        "us_or_international",
+        "gpa",
+        "gre",
+        "gre_v",
+        "gre_aw",
+        "degree",
+        "llm_generated_program",
+        "llm_generated_university",
     )
     placeholders = ", ".join(["%s"] * len(cols))
     sql = (
@@ -83,6 +97,7 @@ def insert_records_by_url(records: list[dict], data_type) -> int:
         conn.commit()  # one commit for the batch
     return inserted
 
+
 # Write a list of dicts to a pretty-printed JSON file.
 def write_json(path: Path, rows: list[dict]) -> None:
     """Write a list of dicts to a pretty-printed JSON file.
@@ -97,6 +112,7 @@ def write_json(path: Path, rows: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
         json.dump(rows, f, ensure_ascii=False, indent=2)
+
 
 # READ json/jsonl file
 def read_json(path: Path) -> list[dict]:

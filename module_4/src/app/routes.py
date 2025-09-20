@@ -1,11 +1,11 @@
 from flask import (
-    Blueprint, 
-    render_template, 
-    redirect, 
-    url_for, 
+    Blueprint,
+    render_template,
+    redirect,
+    url_for,
     flash,
     jsonify,
-    current_app
+    current_app,
 )
 
 import threading
@@ -29,6 +29,7 @@ def index():
     :rtype: werkzeug.wrappers.response.Response
     """
     return redirect(url_for("main.analysis"))
+
 
 @bp.route("/analysis")
 def analysis():
@@ -63,6 +64,7 @@ def analysis():
 
     return render_template("analysis.html", data=data, term_label="Fall 2025")
 
+
 @bp.route("/pull-data", methods=["POST"])
 def pull_data():
     """Start a background pipeline run to fetch and insert new data.
@@ -76,7 +78,6 @@ def pull_data():
     """
     if _pull_running.is_set():
         return jsonify({"busy": True}), 409
-
 
     def worker(app):
         """Run the pipeline inside an application context.
@@ -97,13 +98,14 @@ def pull_data():
 
     # Capture the real Flask app for use in the thread.
     app = current_app._get_current_object()
-    
+
     # Set the running flag before starting the thread to avoid races.
     _pull_running.set()
     threading.Thread(target=worker, args=(app,), daemon=True).start()
-    
+
     flash("Pull Data started… scraping new rows and updating the database.", "info")
     return redirect(url_for("main.analysis"))
+
 
 @bp.route("/update-analysis", methods=["POST"])
 def update_analysis():

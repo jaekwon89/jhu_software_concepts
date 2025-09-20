@@ -2,6 +2,7 @@ import pytest
 import os
 import importlib
 
+
 # -------------------------------------------------------------------
 # 1) Conditionally configure the database for the test session.
 # -------------------------------------------------------------------
@@ -37,10 +38,17 @@ def _setup_db_for_session():
     else:
         # For local runs, we disable the database entirely.
         import psycopg_pool
+
         class NoopPool:
-            def __init__(self, *a, **k): pass
-            def connection(self): raise RuntimeError("ConnectionPool disabled in local tests.")
-            def close(self): pass
+            def __init__(self, *a, **k):
+                pass
+
+            def connection(self):
+                raise RuntimeError("ConnectionPool disabled in local tests.")
+
+            def close(self):
+                pass
+
         mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
         yield
         mp.undo()
@@ -53,6 +61,7 @@ def _setup_db_for_session():
 def app():
     # Now, when create_app is called, the reloaded db modules will be used.
     from app import create_app
+
     app_instance = create_app()
     app_instance.config["TESTING"] = True
     return app_instance
@@ -75,12 +84,14 @@ def stub_queries(monkeypatch):
             monkeypatch.setattr(routes.query_data, name, value)
 
     patch("count_fall_2025", lambda: 1)
-    patch("percent_international", lambda: {
-        "international_count": 1, "us_count": 1, "other_count": 0
-    })
-    patch("avg_scores", lambda: {
-        "avg_gpa": 3.4, "avg_gre": 165, "avg_gre_v": 158, "avg_gre_aw": 4.5
-    })
+    patch(
+        "percent_international",
+        lambda: {"international_count": 1, "us_count": 1, "other_count": 0},
+    )
+    patch(
+        "avg_scores",
+        lambda: {"avg_gpa": 3.4, "avg_gre": 165, "avg_gre_v": 158, "avg_gre_aw": 4.5},
+    )
     patch("avg_gpa_american_fall2025", lambda: 3.2)
     patch("acceptance_rate_fall2025", lambda: 37.12)
     patch("avg_gpa_fall2025_acceptances", lambda: 3.6)
@@ -99,6 +110,7 @@ def clean_db():
         pytest.skip("DB fixtures are only enabled in CI environment")
 
     import app.db as db
+
     db.ensure_table()
     with db.pool.connection() as conn, conn.cursor() as cur:
         cur.execute("TRUNCATE TABLE applicants;")
@@ -120,17 +132,22 @@ def install_sync_pipeline(monkeypatch):
 
         def fake_insert_records_by_url(objs, _data_type):
             return len(objs)
+
         monkeypatch.setattr(dbh, "insert_records_by_url", fake_insert_records_by_url)
 
         def fake_run_pipeline(*_a, **_k):
             inserted = fake_insert_records_by_url(rows, None)
             return {
-                "cleaned": len(rows), "llm": len(rows),
-                "inserted": inserted, "message": "ok"
+                "cleaned": len(rows),
+                "llm": len(rows),
+                "inserted": inserted,
+                "message": "ok",
             }
+
         class FakeThread:
             def __init__(self, target, args=(), daemon=None):
                 self._target, self._args = target, args
+
             def start(self):
                 self._target(*self._args)
 
@@ -139,4 +156,3 @@ def install_sync_pipeline(monkeypatch):
         routes._pull_running.clear()
 
     return _install
-

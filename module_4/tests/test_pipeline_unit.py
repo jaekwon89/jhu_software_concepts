@@ -9,6 +9,7 @@ import app.pipeline as pipeline
 # run_llm_hosting tests
 # --------------------------
 
+
 def test_run_llm_hosting_invokes_subprocess(monkeypatch, tmp_path):
     """Success path: ensure subprocess.run is called with our paths and flags."""
     called = {}
@@ -16,10 +17,12 @@ def test_run_llm_hosting_invokes_subprocess(monkeypatch, tmp_path):
     def fake_run(cmd, **kwargs):
         called["cmd"] = cmd
         called["kwargs"] = kwargs
+
         class _CP:
             returncode = 0
             stdout = "ok"
             stderr = ""
+
         return _CP()
 
     monkeypatch.setattr(subprocess, "run", fake_run)
@@ -43,10 +46,9 @@ def test_run_llm_hosting_invokes_subprocess(monkeypatch, tmp_path):
 
 def test_run_llm_hosting_bubbles_error_and_logs(monkeypatch, tmp_path):
     """Failure path: subprocess raises CalledProcessError; we log and re-raise."""
+
     def fake_run(cmd, **kwargs):
-        raise subprocess.CalledProcessError(
-            returncode=1, cmd=cmd, stderr="boom"
-        )
+        raise subprocess.CalledProcessError(returncode=1, cmd=cmd, stderr="boom")
 
     monkeypatch.setattr(subprocess, "run", fake_run)
 
@@ -68,6 +70,7 @@ def test_run_llm_hosting_bubbles_error_and_logs(monkeypatch, tmp_path):
 # run_pipeline tests
 # --------------------------
 
+
 def test_run_pipeline_returns_no_new_rows(monkeypatch):
     """When run_clean returns 0, pipeline should short-circuit and not call LLM."""
     # existing rids doesn't matter here
@@ -76,12 +79,21 @@ def test_run_pipeline_returns_no_new_rows(monkeypatch):
     monkeypatch.setattr(pipeline, "run_clean", lambda **kwargs: 0)
 
     # guard: if these were called we'd notice (they shouldn't be)
-    monkeypatch.setattr(pipeline, "run_llm_hosting",
-                        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("should not run LLM")))
-    monkeypatch.setattr(pipeline, "read_json",
-                        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("should not read json")))
-    monkeypatch.setattr(pipeline, "insert_records_by_url",
-                        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("should not insert")))
+    monkeypatch.setattr(
+        pipeline,
+        "run_llm_hosting",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("should not run LLM")),
+    )
+    monkeypatch.setattr(
+        pipeline,
+        "read_json",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("should not read json")),
+    )
+    monkeypatch.setattr(
+        pipeline,
+        "insert_records_by_url",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("should not insert")),
+    )
 
     result = pipeline.run_pipeline(max_records=3, delay=0.0)
     assert result == {"cleaned": 0, "llm": 0, "inserted": 0, "message": "No new rows"}
@@ -93,13 +105,14 @@ def test_run_pipeline_happy_path(monkeypatch):
     monkeypatch.setattr(pipeline, "existing_rids", lambda: {"abc", "def"})
 
     # 2) run_clean returns N new rows written to CLEAN_JSON by the cleaner
-    monkeypatch.setattr(pipeline, "run_clean",
-                        lambda **kwargs: 3)  # report 3 cleaned
+    monkeypatch.setattr(pipeline, "run_clean", lambda **kwargs: 3)  # report 3 cleaned
 
     # 3) LLM hosting is a no-op (we just need it to be called without error)
     llm_called = {}
+
     def fake_llm(in_path: Path, out_path: Path):
         llm_called["args"] = (in_path, out_path)
+
     monkeypatch.setattr(pipeline, "run_llm_hosting", fake_llm)
 
     # 4) read_json returns two normalized rows
@@ -108,10 +121,12 @@ def test_run_pipeline_happy_path(monkeypatch):
 
     # 5) DB insert returns number inserted (e.g., 2)
     inserted_capture = {}
+
     def fake_insert(objs, dt):
         inserted_capture["objs"] = objs
         inserted_capture["dt"] = dt
         return 2
+
     monkeypatch.setattr(pipeline, "insert_records_by_url", fake_insert)
 
     # Execute

@@ -3,6 +3,7 @@ import importlib
 import app.query_data as qd
 import app.routes as routes
 
+
 # -------------------------------------------------------------------
 # Undo the conftest autouse stubs for this file so we call real funcs
 # -------------------------------------------------------------------
@@ -12,6 +13,7 @@ def _reset_query_data(monkeypatch):
     importlib.reload(qd)
     # Point routes.query_data back to the freshly reloaded module
     monkeypatch.setattr(routes, "query_data", qd)
+
 
 # -------------------------------------------------------------------
 # Tiny fake psycopg_pool objects with context-manager support
@@ -58,6 +60,7 @@ class _FakeConn:
 
 class _FakePool:
     """Minimal stand-in for psycopg_pool.ConnectionPool used by query_data."""
+
     def __init__(self, rows):
         self._rows = rows
 

@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import time
 
+
 class GradCafeScraping:
     """Scraper for TheGradCafe survey/results pages."""
 
@@ -30,7 +31,7 @@ class GradCafeScraping:
         response = self.http.request("GET", self.base_url + path)
         html_text = response.data.decode("utf-8")
         return BeautifulSoup(html_text, "html.parser")
-    
+
     def collect_records(self, max_records=150, delay=0.5, skip_rids=None):
         """Collect records by walking the survey listing pages.
 
@@ -52,7 +53,7 @@ class GradCafeScraping:
         seen = set()
         records = []
         meta = {}  # reference id -> {"date_added": "...", "term": "..."}
-        
+
         page = 1
         while len(records) < max_records:
             # Build URL: first page is plain /survey/, others use ?page=
@@ -66,7 +67,7 @@ class GradCafeScraping:
             soup = self.scrape_data(path)
 
             all_skipped = True
-            
+
             # Extract IDs
             for a in soup.find_all("a", href=True):
                 m = self.result_re.match(a["href"])
@@ -76,12 +77,12 @@ class GradCafeScraping:
 
                 if rid in seen or rid in skip_rids:
                     continue
-                
+
                 all_skipped = False
 
                 # Choose a larger ancestor that likely contains row content
                 # Start from <tbody>
-                container = a.find_parent('tbody') or a
+                container = a.find_parent("tbody") or a
 
                 if container:
                     row_text = container.get_text(" ", strip=True)
@@ -102,40 +103,36 @@ class GradCafeScraping:
 
                 meta = {
                     rid: {
-                        "date_added": date_added, 
+                        "date_added": date_added,
                         "term": term,
-                        }
                     }
+                }
 
                 # Parsing and adding meta data to the detail page
                 rec = self.parse_results(rid, meta=meta)
-                
+
                 # Prevent reference ID duplicates
                 records.append(rec)
                 seen.add(rid)
 
                 if len(records) >= max_records:
                     break
-            
+
                 time.sleep(delay)  # polite pause between detail fetches
             if all_skipped:
                 break
 
             # Progress (global order number starting at 1)
-            print(
-                f"Order#: {len(records)}. Last Applicant ID on page{page}: {rid}"
-            )
+            print(f"Order#: {len(records)}. Last Applicant ID on page{page}: {rid}")
 
             # Stop if it reaches the limit
             if len(records) >= max_records:
                 break
-            
+
             page += 1
             time.sleep(delay)  # polite pause between listing pages
 
-        
         return records
-    
 
     def parse_results(self, rid: str, meta=""):
         """Scrape a single result detail page and return parsed fields.
@@ -165,43 +162,21 @@ class GradCafeScraping:
             "GRE_V": "",
             "GRE_AW": "",
             "GPA": "",
-            "Degree": "" 
+            "Degree": "",
         }
 
         # Regex patterns
-        institution_re = re.search(
-            r"Institution\s*(.*?)(?=\s*Program)", text, re.I
-        )
-        program_re = re.search(
-            r"Program\s*(.*?)(?=\s*Degree\s*Type)", text, re.I
-        )
-        degree_re = re.search(
-            r"Degree Type\s*([A-Za-z]+)", text, re.I
-        )
-        origin_re = re.search(
-            r"Degree's Country of Origin\s*([A-Za-z]+)", text, re.I
-        )
-        gpa_re = re.search(
-            r"Undergrad GPA\s*(\d\.\d{1,2})", text, re.I
-        )
-        gre_re = re.search(
-            r"GRE\s*General\s*:\s*(\d{1,3})", text, re.I
-        )
-        gre_v_re = re.search(
-            r"GRE\s*Verbal\s*:\s*(\d{1,3})", text, re.I
-        )
-        gre_aw_re = re.search(
-            r"Analytical\s*Writing\s*:\s*([\d\.]+)", text, re.I
-        )
-        notes_re = re.search(
-            r"(?i)Notes\s*(.*?)\s*(?=Timeline\b|$)", text, re.I
-        )
-        decision_re = re.search(
-            r"Decision\s*(.*?)\s*(?=Notification)", text, re.I
-        )
-        noti_re = re.search(
-            r"Notification\s*on\s*(\d{2}/\d{2}/\d{4})", text, re.I
-        )
+        institution_re = re.search(r"Institution\s*(.*?)(?=\s*Program)", text, re.I)
+        program_re = re.search(r"Program\s*(.*?)(?=\s*Degree\s*Type)", text, re.I)
+        degree_re = re.search(r"Degree Type\s*([A-Za-z]+)", text, re.I)
+        origin_re = re.search(r"Degree's Country of Origin\s*([A-Za-z]+)", text, re.I)
+        gpa_re = re.search(r"Undergrad GPA\s*(\d\.\d{1,2})", text, re.I)
+        gre_re = re.search(r"GRE\s*General\s*:\s*(\d{1,3})", text, re.I)
+        gre_v_re = re.search(r"GRE\s*Verbal\s*:\s*(\d{1,3})", text, re.I)
+        gre_aw_re = re.search(r"Analytical\s*Writing\s*:\s*([\d\.]+)", text, re.I)
+        notes_re = re.search(r"(?i)Notes\s*(.*?)\s*(?=Timeline\b|$)", text, re.I)
+        decision_re = re.search(r"Decision\s*(.*?)\s*(?=Notification)", text, re.I)
+        noti_re = re.search(r"Notification\s*on\s*(\d{2}/\d{2}/\d{4})", text, re.I)
 
         # Assign if matches found
         if program_re:
@@ -234,9 +209,8 @@ class GradCafeScraping:
         if program_re:
             program.append(program_re.group(1).strip())
         if institution_re:
-            program.append(", " + institution_re.group(1).strip())   
+            program.append(", " + institution_re.group(1).strip())
         data["program"] = " ".join(program)
-
 
         # Merge listing metadata (date_added, term) if available
         if meta and rid in meta:
@@ -245,5 +219,5 @@ class GradCafeScraping:
                 data["date_added"] = m["date_added"]
             if m.get("term") and not data["term"]:
                 data["term"] = m["term"]
-        
-        return data    
+
+        return data

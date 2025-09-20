@@ -5,6 +5,7 @@ import app.db as db
 from app.db_helper import insert_records_by_url
 from load_data import data_type
 
+
 def _fake_rows():
     return [
         {
@@ -15,7 +16,10 @@ def _fake_rows():
             "status": "Accepted on 09/05/2025",
             "term": "Fall 2025",
             "US/International": "International",
-            "GRE": "169", "GRE_V": "164", "GRE_AW": "5.0", "GPA": "GPA 3.95",
+            "GRE": "169",
+            "GRE_V": "164",
+            "GRE_AW": "5.0",
+            "GPA": "GPA 3.95",
             "Degree": "Masters",
             "llm-generated-program": "Computer Science",
             "llm-generated-university": "Johns Hopkins University",
@@ -28,26 +32,39 @@ def _fake_rows():
             "status": "Rejected on 09/06/2025",
             "term": "Fall 2025",
             "US/International": "American",
-            "GRE": "166", "GRE_V": "160", "GRE_AW": "4.5", "GPA": "GPA 3.70",
+            "GRE": "166",
+            "GRE_V": "160",
+            "GRE_AW": "4.5",
+            "GPA": "GPA 3.70",
             "Degree": "PhD",
             "llm-generated-program": "Computer Science",
             "llm-generated-university": "Georgetown University",
         },
     ]
 
+
 def _install_sync_pipeline(monkeypatch, rows):
     def fake_run_pipeline(*_a, **_k):
         inserted = insert_records_by_url(rows, data_type)
-        return {"cleaned": len(rows), "llm": len(rows), "inserted": inserted, "message": "ok"}
+        return {
+            "cleaned": len(rows),
+            "llm": len(rows),
+            "inserted": inserted,
+            "message": "ok",
+        }
+
     monkeypatch.setattr(routes, "run_pipeline", fake_run_pipeline)
 
     class FakeThread:
         def __init__(self, target, args=(), daemon=None):
             self._target, self._args = target, args
-        def start(self): self._target(*self._args)
+
+        def start(self):
+            self._target(*self._args)
 
     monkeypatch.setattr(routes.threading, "Thread", FakeThread)
     routes._pull_running.clear()
+
 
 @pytest.fixture(autouse=True)
 def _clean_table():
@@ -59,6 +76,7 @@ def _clean_table():
     with db.pool.connection() as conn, conn.cursor() as cur:
         cur.execute("TRUNCATE TABLE applicants;")
         conn.commit()
+
 
 # 5.a End-to-end (pull -> update -> render)
 @pytest.mark.integration
@@ -84,6 +102,7 @@ def test_end_to_end_pull_update_render(client, monkeypatch):
     assert re.search(r"Analysis", html, flags=re.IGNORECASE)
     assert re.search(r"\bAnswer:", html, flags=re.IGNORECASE)
     assert re.search(r"\b\d{1,3}\.\d{2}\s*%", html), "Expected two-decimal percentage"
+
 
 # 5.b Multiple pulls (overlap) respect uniqueness
 @pytest.mark.integration

@@ -22,12 +22,7 @@ import logging
 from pathlib import Path
 import subprocess, sys
 
-from .db_helper import (
-    existing_rids,
-    read_json,
-    insert_records_by_url,
-    TMP_DIR
-)
+from .db_helper import existing_rids, read_json, insert_records_by_url, TMP_DIR
 from .clean import run_clean
 from load_data import data_type
 
@@ -36,6 +31,7 @@ CLEAN_JSON = TMP_DIR / "new_applicant_data.json"
 FINAL_JSON = TMP_DIR / "llm_cleaned.json"
 
 logger = logging.getLogger(__name__)
+
 
 # Call llm_hosting to do the cleaning process
 def run_llm_hosting(in_path: Path, out_path: Path) -> None:
@@ -55,7 +51,7 @@ def run_llm_hosting(in_path: Path, out_path: Path) -> None:
 
     script = Path(__file__).resolve().parent / "llm_hosting" / "app.py"
     cmd = [sys.executable, str(script), "--file", str(in_path), "--out", str(out_path)]
-    
+
     try:
         subprocess.run(cmd, check=True, capture_output=True, text=True)
     except subprocess.CalledProcessError as exc:
@@ -67,6 +63,7 @@ def run_llm_hosting(in_path: Path, out_path: Path) -> None:
         )
         # Re-raise the exception to stop the pipeline
         raise
+
 
 # Run pipeline
 def run_pipeline(max_records: int = 5, delay: float = 0.5) -> dict:

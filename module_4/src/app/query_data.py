@@ -16,6 +16,7 @@ Queries include:
 9. Degree counts in 2025
 10. Top 5 programs in 2025
 """
+
 import psycopg_pool
 import os
 
@@ -30,6 +31,7 @@ PGPASSWORD = os.getenv("PGPASSWORD", "postgres")
 DSN = f"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:5432/{PGDATABASE}"
 pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)
 
+
 # 1. Applicant count (Fall 2025)
 def count_fall_2025():
     """Count the number of applicants for Fall 2025.
@@ -38,7 +40,7 @@ def count_fall_2025():
     :rtype: int
     """
     with pool.connection() as conn:
-        with conn.cursor() as cur:      
+        with conn.cursor() as cur:
             cur.execute(
                 """
                 SELECT COUNT(*)
@@ -48,6 +50,7 @@ def count_fall_2025():
             )
             applicant_count = cur.fetchone()[0]
     return applicant_count
+
 
 # 2. Counts by citizenship (International / American / Other)
 def percent_international():
@@ -77,18 +80,15 @@ def percent_international():
                 """
             )
             row = cur.fetchone()
-    return {
-        "international_count": row[0],
-        "us_count": row[1],
-        "other_count": row[2]
-    }
+    return {"international_count": row[0], "us_count": row[1], "other_count": row[2]}
+
 
 # 3. Average GPA/GREs with range filters (0 treated as missing)
 def avg_scores():
     """Compute average GPA and GRE scores.
 
-    GPA is valid if between 0.01 and 4.3.  
-    GRE/GRE_V are valid if between 130 and 170.  
+    GPA is valid if between 0.01 and 4.3.
+    GRE/GRE_V are valid if between 130 and 170.
     GRE_AW is valid if between 0.01 and 6.
 
     :return: Dictionary of averages.
@@ -111,8 +111,9 @@ def avg_scores():
         "avg_gpa": scores[0],
         "avg_gre": scores[1],
         "avg_gre_v": scores[2],
-        "avg_gre_aw": scores[3]
+        "avg_gre_aw": scores[3],
     }
+
 
 # 4. Average GPA of American students in Fall 2025
 def avg_gpa_american_fall2025():
@@ -135,6 +136,7 @@ def avg_gpa_american_fall2025():
             us_gpa_2025 = cur.fetchone()[0]
     return us_gpa_2025
 
+
 # 5. Acceptance rate in Fall 2025
 def acceptance_rate_fall2025():
     """Compute acceptance rate for Fall 2025.
@@ -155,6 +157,7 @@ def acceptance_rate_fall2025():
             )
             accept_rate_fa2025 = cur.fetchone()[0]
     return accept_rate_fa2025
+
 
 # 6. Avg GPA of accepted applicants in Fall 2025
 def avg_gpa_fall2025_acceptances():
@@ -177,6 +180,7 @@ def avg_gpa_fall2025_acceptances():
             avg_gpa_fa2025_accept = cur.fetchone()[0]
     return avg_gpa_fa2025_accept
 
+
 # 7. Count: JHU Masters in Computer Science
 def count_jhu_masters_cs():
     """Count JHU Masters in Computer Science applicants.
@@ -197,6 +201,7 @@ def count_jhu_masters_cs():
             )
             result = cur.fetchone()[0]
     return result
+
 
 # 8. Count: Georgetown PhD in CS acceptances in 2025
 def count_gt_phd_accept():
@@ -221,6 +226,7 @@ def count_gt_phd_accept():
             result = cur.fetchone()[0]
     return result
 
+
 # 9. Degree counts in 2025
 def degree_counts_2025():
     """Return counts of applicants by degree for 2025.
@@ -243,6 +249,7 @@ def degree_counts_2025():
             )
             results = cur.fetchall()
     return results
+
 
 # 10. Top 5 programs by entries in 2025
 def top_5_programs():
@@ -303,7 +310,7 @@ def main():  # pragma: no cover
         f"Average GRE: {q3['avg_gre']}, \n\t"
         f"Average GRE V: {q3['avg_gre_v']}, "
         f"Average GRE AW: {q3['avg_gre_aw']}"
-        )
+    )
     print(f"Average GPA American: {q4}")
     print(f"Acceptance rate: {q5:.2f}")
     print(f"Average GPA for accpeted applicants in Fall 2025: {q6}")
@@ -316,6 +323,7 @@ def main():  # pragma: no cover
     print("Top 5 Programs by number of applicants in 2025:")
     for program, count in q10:
         print(f"\t{program}: {count}")
+
 
 if __name__ == "__main__":  # pragma: no cover
     main()
