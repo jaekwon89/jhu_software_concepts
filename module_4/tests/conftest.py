@@ -3,42 +3,55 @@ import os
 
 # -------------------------------------------------------------------
 # 1) Conditionally configure the database for the test session.
+#    This fixture runs once before any tests start.
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session", autouse=True)
 def _setup_db_for_session():
-    # We must use a manually instantiated MonkeyPatch for session-scoped fixtures.
+    # We must use a manually instantiated MonkeyPatch for session-scoped fixtures
+    # to avoid a "ScopeMismatch" error.
     mp = pytest.MonkeyPatch()
 
     if os.getenv("CI") == "true":
-        # In the CI environment, we need a real database connection.
-        # The app's default pool is created at module import time and may be
-        # misconfigured for localhost. We must replace it with a pool that
-        # correctly points to the 'postgres' service container.
-        import app.db
+        # In the CI environment, we need a real database connection. The app's
+        # default pool is created at module import time and is misconfigured
+        # for 'localhost'. To fix this, we patch the ConnectionPool class itself.
         import psycopg_pool
+
+        # Keep a reference to the original class for creating our correctly
+        # configured pool and for proper cleanup.
+        OriginalConnectionPool = psycopg_pool.ConnectionPool
 
         # Define the correct connection string for the CI service container.
         ci_conninfo = "postgresql://postgres:postgres@postgres:5432/gradcafe"
 
-        # Create a new pool with the correct settings. Using `wait_pool` makes
-        # the connection resilient to small delays in the service starting up.
-        ci_pool = psycopg_pool.ConnectionPool(ci_conninfo, open=psycopg_pool.wait_pool)
+        # Create our correctly configured, singleton pool for the entire test session.
+        # `wait_pool` makes the connection resilient to small startup delays.
+        ci_pool = OriginalConnectionPool(ci_conninfo, open=psycopg_pool.wait_pool)
 
-        # Atomically replace the old, misconfigured pool with our new one.
-        mp.setattr(app.db, 'pool', ci_pool)
-        
-        yield
-        
+        # Create a custom class to replace the original. Its __new__ method
+        # will intercept any attempt by the application to create a new pool.
+        class PatchedConnectionPool(OriginalConnectionPool):
+            def __new__(cls, *args, **kwargs):
+                # When any part of the app tries to instantiate ConnectionPool,
+                # we ignore the arguments it provides (like the incorrect
+                # 'localhost' URL) and return our pre-configured instance.
+                return ci_pool
+
+        # Patch the class in the psycopg_pool module. This is the crucial step.
+        mp.setattr(psycopg_pool, "ConnectionPool", PatchedConnectionPool)
+
+        yield  # Run all the tests
+
         # After all tests run, close the pool and undo the patch.
         ci_pool.close()
         mp.undo()
     else:
-        # For local runs, we disable the database by default to keep unit
-        # tests fast and isolated. We patch the entire ConnectionPool class.
+        # For local runs, we disable the database entirely to keep unit
+        # tests fast and isolated.
         import psycopg_pool
         class NoopPool:
             def __init__(self, *a, **k): pass
-            def connection(self): raise RuntimeError("ConnectionPool disabled in local tests. Use a DB-specific mark to enable.")
+            def connection(self): raise RuntimeError("ConnectionPool disabled in local tests.")
             def close(self): pass
         mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
         yield
@@ -47,7 +60,7 @@ def _setup_db_for_session():
 
 # -------------------------------------------------------------------
 # 2) Flask app & client
-#    Import create_app lazily so it sees the environment variable/patches.
+#    Import create_app lazily so it sees the patches.
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session")
 def app():
@@ -63,8 +76,7 @@ def client(app):
 
 
 # -------------------------------------------------------------------
-# 3) Global autouse stubs for routes.query_data.* so /analysis never
-#    rounds None. Import routes lazily (after patch).
+# 3) Global autouse stubs for routes.query_data.* functions.
 # -------------------------------------------------------------------
 @pytest.fixture(autouse=True)
 def stub_queries(monkeypatch):
@@ -91,12 +103,10 @@ def stub_queries(monkeypatch):
 
 
 # -------------------------------------------------------------------
-# 4) DB isolation when a test needs the real applicants table.
-#    Import db lazily (after patch); opt-in per test.
+# 4) DB isolation fixture for tests that modify the database.
 # -------------------------------------------------------------------
 @pytest.fixture
 def clean_db():
-    # This fixture will only work in CI now, as the pool is disabled locally.
     if os.getenv("CI") != "true":
         pytest.skip("DB fixtures are only enabled in CI environment")
 
@@ -112,38 +122,24 @@ def clean_db():
 
 
 # -------------------------------------------------------------------
-# 5) Helper to run /pull-data synchronously in tests.
-#    Import lazily; clears busy flag.
+# 5) Helper to make the data pipeline run synchronously in tests.
 # -------------------------------------------------------------------
 @pytest.fixture
 def install_sync_pipeline(monkeypatch):
-    """
-    Make /pull-data run synchronously without touching a real DB:
-
-      - routes.run_pipeline -> fake that returns counts
-      - app.db_helper.insert_records_by_url -> fake that just counts rows
-      - threading.Thread -> FakeThread that runs immediately
-      - clear the busy flag
-    """
     def _install(rows):
         import app.routes as routes
-        import app.db_helper as dbh  # patch function here
+        import app.db_helper as dbh
 
-        # DB-free insert: just count unique URLs (or all rows; either is fine for tests)
         def fake_insert_records_by_url(objs, _data_type):
             return len(objs)
-
         monkeypatch.setattr(dbh, "insert_records_by_url", fake_insert_records_by_url)
 
         def fake_run_pipeline(*_a, **_k):
             inserted = fake_insert_records_by_url(rows, None)
             return {
-                "cleaned": len(rows),
-                "llm": len(rows),
-                "inserted": inserted,
-                "message": "ok",
+                "cleaned": len(rows), "llm": len(rows),
+                "inserted": inserted, "message": "ok"
             }
-
         class FakeThread:
             def __init__(self, target, args=(), daemon=None):
                 self._target, self._args = target, args
