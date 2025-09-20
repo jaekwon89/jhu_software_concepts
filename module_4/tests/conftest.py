@@ -6,49 +6,29 @@ import importlib
 # -------------------------------------------------------------------
 # 1) Conditionally configure the database for the test session.
 # -------------------------------------------------------------------
+# This fixture runs once before any tests and is the key to the solution.
 @pytest.fixture(scope="session", autouse=True)
 def _setup_db_for_session():
-    # We use a manually instantiated MonkeyPatch for session-scoped fixtures
-    # to avoid a "ScopeMismatch" error with the function-scoped `monkeypatch`.
+    # Use a manual MonkeyPatch to avoid scope errors with session-wide fixtures.
     mp = pytest.MonkeyPatch()
 
     if os.getenv("CI") == "true":
-        # In the CI environment, we MUST force the application to connect to the
-        # 'postgres' service container instead of 'localhost'. We do this by
-        # setting environment variables *before* the app's db modules are loaded.
-
-        # Set environment variables for the database connection.
-        mp.setenv("PGHOST", "postgres")
-        mp.setenv("PGDATABASE", "gradcafe")
-        mp.setenv("PGUSER", "postgres")
-        mp.setenv("PGPASSWORD", "postgres")
-
-        # --- CRUCIAL STEP ---
-        # The application's db modules might have been imported and cached by
-        # pytest before this fixture ran. We must force a reload to ensure they
-        # pick up the new environment variables.
+        # In the CI environment, we MUST force a reload of the app's db modules
+        # to ensure they pick up the environment variables from the workflow.
         if "app.db" in importlib.sys.modules:
             importlib.reload(importlib.sys.modules["app.db"])
         if "app.query_data" in importlib.sys.modules:
             importlib.reload(importlib.sys.modules["app.query_data"])
-
+        
         yield  # Run all the tests
 
-        mp.undo()  # Clean up the environment variables
     else:
-        # For local runs, we disable the database entirely.
+        # For local runs, we disable the database entirely for fast, isolated tests.
         import psycopg_pool
-
         class NoopPool:
-            def __init__(self, *a, **k):
-                pass
-
-            def connection(self):
-                raise RuntimeError("ConnectionPool disabled in local tests.")
-
-            def close(self):
-                pass
-
+            def __init__(self, *a, **k): pass
+            def connection(self): raise RuntimeError("ConnectionPool disabled in local tests.")
+            def close(self): pass
         mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
         yield
         mp.undo()
