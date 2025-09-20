@@ -28,9 +28,8 @@ Schema
 """
 
 import psycopg_pool
-import os  # Import the os module
+import os
 
-# --- Configuration ---
 # Build the DSN from environment variables, with localhost as a fallback.
 PGHOST = os.getenv("PGHOST", "localhost")
 PGDATABASE = os.getenv("PGDATABASE", "gradcafe")
@@ -64,7 +63,6 @@ def ensure_table():
       llm_generated_university TEXT
     );
     """
-
     with pool.connection() as conn:
         with conn.cursor() as cur:
             cur.execute(ddl)
