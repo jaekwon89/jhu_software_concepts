@@ -2,22 +2,40 @@ import pytest
 import os
 
 # -------------------------------------------------------------------
-# 1) In CI, forcefully set the correct DATABASE_URL before the app is created.
-#    For local tests, disable the real DB connection pool unless a test
-#    is specifically marked to use it.
+# 1) Conditionally configure the database for the test session.
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session", autouse=True)
 def _setup_db_for_session():
+    # We must use a manually instantiated MonkeyPatch for session-scoped fixtures.
+    mp = pytest.MonkeyPatch()
+
     if os.getenv("CI") == "true":
-        # In CI, we need a real database. Force the app to use the
-        # 'postgres' service container as the host.
-        os.environ["DATABASE_URL"] = "postgresql://postgres:postgres@postgres:5432/gradcafe"
-        yield
-    else:
-        # Locally, disable the real DB pool by default to keep unit tests fast.
-        # We instantiate MonkeyPatch manually to avoid a scope mismatch error.
+        # In the CI environment, we need a real database connection.
+        # The app's default pool is created at module import time and may be
+        # misconfigured for localhost. We must replace it with a pool that
+        # correctly points to the 'postgres' service container.
+        import app.db
         import psycopg_pool
-        mp = pytest.MonkeyPatch()
+
+        # Define the correct connection string for the CI service container.
+        ci_conninfo = "postgresql://postgres:postgres@postgres:5432/gradcafe"
+
+        # Create a new pool with the correct settings. Using `wait_pool` makes
+        # the connection resilient to small delays in the service starting up.
+        ci_pool = psycopg_pool.ConnectionPool(ci_conninfo, open=psycopg_pool.wait_pool)
+
+        # Atomically replace the old, misconfigured pool with our new one.
+        mp.setattr(app.db, 'pool', ci_pool)
+        
+        yield
+        
+        # After all tests run, close the pool and undo the patch.
+        ci_pool.close()
+        mp.undo()
+    else:
+        # For local runs, we disable the database by default to keep unit
+        # tests fast and isolated. We patch the entire ConnectionPool class.
+        import psycopg_pool
         class NoopPool:
             def __init__(self, *a, **k): pass
             def connection(self): raise RuntimeError("ConnectionPool disabled in local tests. Use a DB-specific mark to enable.")
