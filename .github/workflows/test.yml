@@ -1,20 +1,15 @@
 # .github/workflows/test.yml
 name: module_4 tests
-
 on:
   push:
-    paths:
-      - "module_4/**"
-      - ".github/workflows/test.yml"
+    paths: ["module_4/**", ".github/workflows/test.yml"]
   pull_request:
-    paths:
-      - "module_4/**"
+    paths: ["module_4/**"]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    # PostgreSQL service for tests
     services:
       postgres:
         image: postgres:15
@@ -24,73 +19,63 @@ jobs:
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
-        # wait until the DB is ready
         options: >-
           --health-cmd="pg_isready -U postgres -d postgres"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=10
+          --health-interval=5s --health-timeout=5s --health-retries=20
 
-    # Make the DB URL visible to your code under src/app/db.py
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      # IMPORTANT: use the service host "postgres", not localhost
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
+      PGHOST: postgres
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      PGPORT: "5432"
 
     defaults:
       run:
         working-directory: module_4
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Upgrade pip & install deps
+      - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          else
-            # fallback: install what tests need
-            pip install flask pytest pytest-cov psycopg[binary]
-          fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install flask pytest pytest-cov psycopg[binary]; fi
 
-      # optional: prove we can connect before running pytest
-      - name: Sanity check DB connection
+      - name: Wait for DB to be ready
         run: |
-          python - << 'PY'
-          import os
-          from psycopg import connect
+          python - <<'PY'
+          import os, time
+          from psycopg import connect, OperationalError
           dsn = os.environ["DATABASE_URL"]
-          with connect(dsn) as conn, conn.cursor() as cur:
-              cur.execute("SELECT 1;")
-              print("DB OK:", cur.fetchone())
+          for i in range(30):
+              try:
+                  with connect(dsn) as conn, conn.cursor() as cur:
+                      cur.execute("SELECT 1")
+                      print("DB ready"); break
+              except OperationalError as e:
+                  print("DB not ready yet:", e)
+                  time.sleep(1)
+          else:
+              raise SystemExit("DB never became ready")
           PY
 
       - name: Run tests with coverage
         run: |
           pytest -q --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=1
 
-      - name: Upload coverage summary
+      - name: Save coverage files
         if: always()
         run: |
-          python - << 'PY'
-          from xml.etree import ElementTree as ET
-          t = ET.parse('coverage.xml').getroot()
-          totals = t.find('coverage').find('project').find('metrics') if t.tag!='coverage' else t.find('project/metrics')
-          # fallback parser if schema differs
-          print("coverage.xml saved")
-          PY
-          # Save a simple text artifact for the assignment
-          echo "Coverage XML written; see job summary." > coverage_summary.txt
+          cp coverage.xml coverage_summary.txt || true
         shell: bash
 
-      - name: Store coverage.xml and summary
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: |
