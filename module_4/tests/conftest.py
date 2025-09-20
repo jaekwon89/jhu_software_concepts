@@ -2,65 +2,26 @@ import pytest
 import os
 
 # -------------------------------------------------------------------
-# 1) Conditionally configure the database for the test session.
-#    This fixture runs once before any tests start.
+# 1) Disable real psycopg_pool.ConnectionPool in tests (session-wide)
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session", autouse=True)
-def _setup_db_for_session():
-    # We must use a manually instantiated MonkeyPatch for session-scoped fixtures
-    # to avoid a "ScopeMismatch" error.
-    mp = pytest.MonkeyPatch()
-
+def _disable_real_connectionpool():
+    # IMPORTANT: don't disable DB in CI
     if os.getenv("CI") == "true":
-        # In the CI environment, we need a real database connection. The app's
-        # default pool is created at module import time and is misconfigured
-        # for 'localhost'. To fix this, we patch the ConnectionPool class itself.
-        import psycopg_pool
-
-        # Keep a reference to the original class for creating our correctly
-        # configured pool and for proper cleanup.
-        OriginalConnectionPool = psycopg_pool.ConnectionPool
-
-        # Define the correct connection string for the CI service container.
-        ci_conninfo = "postgresql://postgres:postgres@postgres:5432/gradcafe"
-
-        # Create our correctly configured, singleton pool for the entire test session.
-        # `wait_pool` makes the connection resilient to small startup delays.
-        ci_pool = OriginalConnectionPool(ci_conninfo, open=psycopg_pool.wait_pool)
-
-        # Create a custom class to replace the original. Its __new__ method
-        # will intercept any attempt by the application to create a new pool.
-        class PatchedConnectionPool(OriginalConnectionPool):
-            def __new__(cls, *args, **kwargs):
-                # When any part of the app tries to instantiate ConnectionPool,
-                # we ignore the arguments it provides (like the incorrect
-                # 'localhost' URL) and return our pre-configured instance.
-                return ci_pool
-
-        # Patch the class in the psycopg_pool module. This is the crucial step.
-        mp.setattr(psycopg_pool, "ConnectionPool", PatchedConnectionPool)
-
-        yield  # Run all the tests
-
-        # After all tests run, close the pool and undo the patch.
-        ci_pool.close()
-        mp.undo()
-    else:
-        # For local runs, we disable the database entirely to keep unit
-        # tests fast and isolated.
-        import psycopg_pool
-        class NoopPool:
-            def __init__(self, *a, **k): pass
-            def connection(self): raise RuntimeError("ConnectionPool disabled in local tests.")
-            def close(self): pass
-        mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
-        yield
-        mp.undo()
+        return
+    import psycopg_pool
+    mp = pytest.MonkeyPatch()
+    class NoopPool:
+        def __init__(self, *a, **k): pass
+        def connection(self): raise RuntimeError("ConnectionPool disabled in tests")
+        def close(self): pass
+    mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
+    yield
+    mp.undo()
 
 
 # -------------------------------------------------------------------
 # 2) Flask app & client
-#    Import create_app lazily so it sees the patches.
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session")
 def app():
@@ -107,9 +68,6 @@ def stub_queries(monkeypatch):
 # -------------------------------------------------------------------
 @pytest.fixture
 def clean_db():
-    if os.getenv("CI") != "true":
-        pytest.skip("DB fixtures are only enabled in CI environment")
-
     import app.db as db
     db.ensure_table()
     with db.pool.connection() as conn, conn.cursor() as cur:
