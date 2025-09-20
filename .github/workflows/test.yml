@@ -1,0 +1,82 @@
+name: tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'module_4/**'
+      - '.github/workflows/test.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'module_4/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: pytest (${{ matrix.os }} / py ${{ matrix.python-version }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.10']  # add '3.11','3.12' if you want
+    runs-on: ${{ matrix.os }}
+
+    # Run all commands from module_4
+    defaults:
+      run:
+        working-directory: module_4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: module_4/requirements.txt
+
+      - name: Show Python & pip
+        run: |
+          python -V
+          python -m pip -V
+
+      - name: Install requirements (if present)
+        if: ${{ hashFiles('module_4/requirements.txt') != '' }}
+        run: |
+          python -m pip install -U pip
+          python -m pip install -r requirements.txt
+
+      - name: Ensure pytest + coverage are installed
+        run: python -m pip install pytest pytest-cov coverage
+
+      - name: Run tests with coverage
+        # --cov=src assumes your code is under module_4/src
+        run: |
+          pytest -q --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml
+
+      - name: Create coverage_summary.txt (cross-platform)
+        if: always()
+        run: >
+          python -c "import pathlib,subprocess;
+          p=pathlib.Path('.coverage');
+          open('coverage_summary.txt','w',encoding='utf-8').write(
+          subprocess.check_output(['coverage','report','-m'], text=True) if p.exists()
+          else 'No coverage data (.coverage) was produced.\n')"
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}
+          path: |
+            module_4/.coverage
+            module_4/coverage.xml
+            module_4/coverage_summary.txt
+          retention-days: 21
+          if-no-files-found: warn
