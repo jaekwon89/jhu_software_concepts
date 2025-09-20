@@ -1,23 +1,49 @@
 import pytest
 import os
+import importlib
 
 # -------------------------------------------------------------------
-# 1) Disable real psycopg_pool.ConnectionPool in tests (session-wide)
+# 1) Conditionally configure the database for the test session.
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session", autouse=True)
-def _disable_real_connectionpool():
-    # IMPORTANT: don't disable DB in CI
-    if os.getenv("CI") == "true":
-        return
-    import psycopg_pool
+def _setup_db_for_session():
+    # We use a manually instantiated MonkeyPatch for session-scoped fixtures
+    # to avoid a "ScopeMismatch" error with the function-scoped `monkeypatch`.
     mp = pytest.MonkeyPatch()
-    class NoopPool:
-        def __init__(self, *a, **k): pass
-        def connection(self): raise RuntimeError("ConnectionPool disabled in tests")
-        def close(self): pass
-    mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
-    yield
-    mp.undo()
+
+    if os.getenv("CI") == "true":
+        # In the CI environment, we MUST force the application to connect to the
+        # 'postgres' service container instead of 'localhost'. We do this by
+        # setting environment variables *before* the app's db modules are loaded.
+
+        # Set environment variables for the database connection.
+        mp.setenv("PGHOST", "postgres")
+        mp.setenv("PGDATABASE", "gradcafe")
+        mp.setenv("PGUSER", "postgres")
+        mp.setenv("PGPASSWORD", "postgres")
+
+        # --- CRUCIAL STEP ---
+        # The application's db modules might have been imported and cached by
+        # pytest before this fixture ran. We must force a reload to ensure they
+        # pick up the new environment variables.
+        if "app.db" in importlib.sys.modules:
+            importlib.reload(importlib.sys.modules["app.db"])
+        if "app.query_data" in importlib.sys.modules:
+            importlib.reload(importlib.sys.modules["app.query_data"])
+
+        yield  # Run all the tests
+
+        mp.undo()  # Clean up the environment variables
+    else:
+        # For local runs, we disable the database entirely.
+        import psycopg_pool
+        class NoopPool:
+            def __init__(self, *a, **k): pass
+            def connection(self): raise RuntimeError("ConnectionPool disabled in local tests.")
+            def close(self): pass
+        mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
+        yield
+        mp.undo()
 
 
 # -------------------------------------------------------------------
@@ -25,6 +51,7 @@ def _disable_real_connectionpool():
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session")
 def app():
+    # Now, when create_app is called, the reloaded db modules will be used.
     from app import create_app
     app_instance = create_app()
     app_instance.config["TESTING"] = True
@@ -68,6 +95,9 @@ def stub_queries(monkeypatch):
 # -------------------------------------------------------------------
 @pytest.fixture
 def clean_db():
+    if os.getenv("CI") != "true":
+        pytest.skip("DB fixtures are only enabled in CI environment")
+
     import app.db as db
     db.ensure_table()
     with db.pool.connection() as conn, conn.cursor() as cur:
