@@ -19,27 +19,19 @@ def _setup_db_for_session():
             importlib.reload(importlib.sys.modules["app.db"])
         if "app.query_data" in importlib.sys.modules:
             importlib.reload(importlib.sys.modules["app.query_data"])
-
+        
         yield  # Run all the tests
 
     else:
         # For local runs, we disable the database entirely for fast, isolated tests.
         import psycopg_pool
-
         class NoopPool:
-            def __init__(self, *a, **k):
-                pass
-
-            def connection(self):
-                raise RuntimeError("ConnectionPool disabled in local tests.")
-
-            def close(self):
-                pass
-
+            def __init__(self, *a, **k): pass
+            def connection(self): raise RuntimeError("ConnectionPool disabled in local tests.")
+            def close(self): pass
         mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
         yield
         mp.undo()
-
 
 # -------------------------------------------------------------------
 # 2) Flask app & client
