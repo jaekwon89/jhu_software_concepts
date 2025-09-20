@@ -14,7 +14,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Postgres that matches src/app/db.py DSN:
     services:
       postgres:
         image: postgres:16
@@ -24,15 +23,13 @@ jobs:
           POSTGRES_DB: gradcafe
         ports:
           - 5432:5432
-        # Keep trying until healthy
         options: >-
           --health-cmd="pg_isready -U postgres -d gradcafe -h localhost"
           --health-interval=3s
           --health-timeout=5s
-          --health-retries=20
+          --health-retries=40
 
     env:
-      # Your code uses a hard-coded DSN, so these are mainly for helper tools
       PGHOST: 127.0.0.1
       PGPORT: 5432
       PGUSER: postgres
@@ -44,33 +41,25 @@ jobs:
         working-directory: module_4
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install PostgreSQL client (for readiness checks)
+      - name: Install psql client & wait for DB
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Wait for Postgres to be ready
-        run: |
-          for i in {1..40}; do
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          for i in {1..60}; do
             if pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE"; then
               psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "SELECT 1;" && break
             fi
-            echo "Postgres not ready yet... ($i)"
-            sleep 2
+            echo "Postgres not ready yet... ($i)"; sleep 2
           done
 
-      - name: Upgrade pip & install deps
+      - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          # If you have requirements.txt in module_4, prefer that:
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
@@ -81,18 +70,15 @@ jobs:
       - name: Run tests with coverage
         run: |
           pytest -q --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=1
-          # create a friendly summary file
           coverage report -m > coverage_summary.txt || true
 
-      - name: Upload coverage XML
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-xml
           path: module_4/coverage.xml
 
-      - name: Upload coverage summary
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-summary
