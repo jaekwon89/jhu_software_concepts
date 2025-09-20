@@ -26,14 +26,14 @@ jobs:
           --health-retries=10
 
     env:
-      # In GitHub Actions, the hostname for a service is its label.
-      # We must use 'postgres' here instead of '127.0.0.1'.
-      PGHOST: postgres
+      # Align the hostname with what the application code expects (127.0.0.1).
+      # This works because of the 'ports' mapping in the services block.
+      PGHOST: 127.0.0.1
       PGPORT: 5432
       PGUSER: postgres
       PGPASSWORD: postgres
       PGDATABASE: gradcafe
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/gradcafe
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/gradcafe
       # Define the Python version as an env var for easy updates
       PYTHON_VERSION: "3.12"
 
