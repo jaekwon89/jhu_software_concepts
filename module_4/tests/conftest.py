@@ -2,29 +2,34 @@ import pytest
 import os
 
 # -------------------------------------------------------------------
-# 1) Disable real psycopg_pool.ConnectionPool in tests (session-wide)
-#    Use pytest.MonkeyPatch directly (not the function-scoped fixture).
-#    Import *no* app modules before this runs.
+# 1) In CI, forcefully set the correct DATABASE_URL before the app is created.
+#    For local tests, disable the real DB connection pool unless a test
+#    is specifically marked to use it.
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session", autouse=True)
-def _disable_real_connectionpool():
-    # IMPORTANT: don't disable DB in CI
+def _setup_db_for_session():
     if os.getenv("CI") == "true":
-        return
-    import psycopg_pool
-    mp = pytest.MonkeyPatch()
-    class NoopPool:
-        def __init__(self, *a, **k): pass
-        def connection(self): raise RuntimeError("ConnectionPool disabled in tests")
-        def close(self): pass
-    mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
-    yield
-    mp.undo()
+        # In CI, we need a real database. Force the app to use the
+        # 'postgres' service container as the host.
+        os.environ["DATABASE_URL"] = "postgresql://postgres:postgres@postgres:5432/gradcafe"
+        yield
+    else:
+        # Locally, disable the real DB pool by default to keep unit tests fast.
+        # We instantiate MonkeyPatch manually to avoid a scope mismatch error.
+        import psycopg_pool
+        mp = pytest.MonkeyPatch()
+        class NoopPool:
+            def __init__(self, *a, **k): pass
+            def connection(self): raise RuntimeError("ConnectionPool disabled in local tests. Use a DB-specific mark to enable.")
+            def close(self): pass
+        mp.setattr(psycopg_pool, "ConnectionPool", NoopPool)
+        yield
+        mp.undo()
 
 
 # -------------------------------------------------------------------
 # 2) Flask app & client
-#    Import create_app lazily so it sees the patched ConnectionPool.
+#    Import create_app lazily so it sees the environment variable/patches.
 # -------------------------------------------------------------------
 @pytest.fixture(scope="session")
 def app():
@@ -73,6 +78,10 @@ def stub_queries(monkeypatch):
 # -------------------------------------------------------------------
 @pytest.fixture
 def clean_db():
+    # This fixture will only work in CI now, as the pool is disabled locally.
+    if os.getenv("CI") != "true":
+        pytest.skip("DB fixtures are only enabled in CI environment")
+
     import app.db as db
     db.ensure_table()
     with db.pool.connection() as conn, conn.cursor() as cur:
@@ -128,3 +137,4 @@ def install_sync_pipeline(monkeypatch):
         routes._pull_running.clear()
 
     return _install
+
