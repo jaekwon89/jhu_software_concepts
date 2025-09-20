@@ -3,9 +3,13 @@ name: tests
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'module_4/**'
+      - '.github/workflows/test.yml'
   pull_request:
     branches: [ main ]
-  # let you kick it off manually from the Actions tab
+    paths:
+      - 'module_4/**'
   workflow_dispatch:
 
 permissions:
@@ -13,15 +17,15 @@ permissions:
 
 jobs:
   pytest:
-    name: pytest (${{ matrix.os }} / py${{ matrix.python-version }})
+    name: pytest (${{ matrix.os }} / py ${{ matrix.python-version }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.12']  # add '3.11' here too if you want
+        python-version: ['3.10']  # add '3.11','3.12' if you want
     runs-on: ${{ matrix.os }}
 
-    # run all shell commands from module_4 (works for both OS shells)
+    # Run all commands from module_4
     defaults:
       run:
         working-directory: module_4
@@ -35,46 +39,44 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-          cache-dependency-path: |
-            module_4/requirements.txt
+          cache-dependency-path: module_4/requirements.txt
 
       - name: Show Python & pip
         run: |
           python -V
           python -m pip -V
 
-      # Install your dependencies if a requirements.txt exists
-      - name: Install requirements
+      - name: Install requirements (if present)
         if: ${{ hashFiles('module_4/requirements.txt') != '' }}
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install -U pip
           python -m pip install -r requirements.txt
 
-      # Make sure pytest & coverage are present even if not in requirements
-      - name: Install test tools
-        run: |
-          python -m pip install pytest pytest-cov
+      - name: Ensure pytest + coverage are installed
+        run: python -m pip install pytest pytest-cov coverage
 
       - name: Run tests with coverage
         # --cov=src assumes your code is under module_4/src
         run: |
           pytest -q --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml
-          # save a plain-text summary we can download as proof
-          python -m coverage report -m > coverage_summary.txt
 
-      # Upload artifacts so you can download proof of coverage after the run
-      - name: Upload coverage summary
+      - name: Create coverage_summary.txt (cross-platform)
+        if: always()
+        run: >
+          python -c "import pathlib,subprocess;
+          p=pathlib.Path('.coverage');
+          open('coverage_summary.txt','w',encoding='utf-8').write(
+          subprocess.check_output(['coverage','report','-m'], text=True) if p.exists()
+          else 'No coverage data (.coverage) was produced.\n')"
+
+      - name: Upload coverage artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-summary-${{ matrix.os }}
-          path: module_4/coverage_summary.txt
+          name: coverage-${{ matrix.os }}
+          path: |
+            module_4/.coverage
+            module_4/coverage.xml
+            module_4/coverage_summary.txt
           retention-days: 21
-
-      - name: Upload coverage XML
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-xml-${{ matrix.os }}
-          path: module_4/coverage.xml
-          retention-days: 21
+          if-no-files-found: warn
