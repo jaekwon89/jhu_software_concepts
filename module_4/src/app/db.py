@@ -27,7 +27,7 @@ Schema
    );
 """
 import psycopg_pool
-import os
+import os # Import the os module
 
 # --- Configuration ---
 # Build the DSN from environment variables, with localhost as a fallback.
@@ -43,21 +43,14 @@ DSN = f"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:5432/{PGDATABASE}"
 pool = psycopg_pool.ConnectionPool(DSN, min_size=1, max_size=5)
 
 def ensure_table():
-    """Ensure the ``applicants`` table exists.
-
-    Executes a ``CREATE TABLE IF NOT EXISTS`` DDL statement to create
-    the table with the expected schema if it does not already exist.
-
-    :return: None
-    :rtype: NoneType
-    """
+    """Ensure the ``applicants`` table exists."""
     ddl = """
     CREATE TABLE IF NOT EXISTS applicants(
       p_id SERIAL PRIMARY KEY,
       program TEXT,
       comments TEXT,
       date_added DATE,
-      url TEXT,
+      url TEXT UNIQUE,
       status TEXT,
       term TEXT,
       us_or_international TEXT,
