@@ -3,37 +3,22 @@ name: module_4 tests
 on:
   push:
     branches: [ main ]
-    paths: [ 'module_4/**', '.github/workflows/**' ]
+    paths:
+      - 'module_4/**'             # only run when module_4 changes
+      - '.github/workflows/**'
   pull_request:
     branches: [ main ]
-    paths: [ 'module_4/**', '.github/workflows/**' ]
-  workflow_dispatch:
+    paths:
+      - 'module_4/**'
+      - '.github/workflows/**'
+  workflow_dispatch:              # allow manual run from Actions tab
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-
-    # Launch a Postgres container the tests can reach at localhost:5432
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: gradcafe
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres -d gradcafe"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=12
-
-    # All commands run from module_4/
+    runs-on: ubuntu-latest        # or add a matrix for Windows too
     defaults:
       run:
-        working-directory: module_4
-
+        working-directory: module_4   # all commands run inside module_4
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,34 +28,21 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpq-dev postgresql-client
-
-      - name: Install Python deps
+      - name: Upgrade pip & install deps
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # optional: extra tools used below
           pip install pytest pytest-cov coverage[toml]
-
-      - name: Wait for Postgres
-        env:
-          PGPASSWORD: postgres
-        run: |
-          for i in {1..30}; do
-            pg_isready -h localhost -p 5432 -U postgres -d gradcafe && break
-            sleep 1
-          done
-          psql -h localhost -p 5432 -U postgres -d gradcafe -c 'select 1;'
 
       - name: Run tests with coverage
         run: |
-          pytest -q --cov=src --cov-report=term-missing --cov-report=xml
+          pytest -q --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=1
+          coverage xml -o coverage.xml
           coverage report > coverage_summary.txt
 
       - name: Upload coverage summary
         uses: actions/upload-artifact@v4
         with:
-          name: module_4-coverage
+          name: coverage-summary
           path: module_4/coverage_summary.txt
