@@ -1,3 +1,6 @@
+# This GitHub Actions workflow tests the Python application in module_4
+# against a real PostgreSQL database.
+
 name: module_4 tests
 
 on:
@@ -18,7 +21,6 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: gradcafe
         ports: ["5432:5432"]
-        # The health check ensures the database is ready before the job starts.
         options: >-
           --health-cmd="pg_isready -U postgres -d gradcafe"
           --health-interval=5s
@@ -26,15 +28,10 @@ jobs:
           --health-retries=10
 
     env:
-      # Align the hostname with what the application code expects (127.0.0.1).
-      # This works because of the 'ports' mapping in the services block.
-      PGHOST: 127.0.0.1
-      PGPORT: 5432
-      PGUSER: postgres
-      PGPASSWORD: postgres
-      PGDATABASE: gradcafe
-      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/gradcafe
-      # Define the Python version as an env var for easy updates
+      # This variable tells the application to connect to the service container.
+      PGHOST: postgres
+      # This variable tells conftest.py to enable real database tests.
+      CI: "true"
       PYTHON_VERSION: "3.12"
 
     defaults:
@@ -45,50 +42,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ env.PYTHON_VERSION }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          # Add caching for pip dependencies to speed up subsequent runs
           cache: 'pip'
-          cache-dependency-path: module_4/requirements.txt # Or setup.py, pyproject.toml
+          cache-dependency-path: module_4/requirements.txt
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Added Ruff for fast linting and formatting checks
           pip install ruff
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
-          else
-            pip install -e .
-            pip install pytest pytest-cov psycopg[binary,pool] flask
           fi
 
-      - name: Lint and format check with Ruff
+      - name: Lint and format check
         run: |
-          # Check formatting (add --fix to apply changes)
           ruff format --check .
-          # Check for linting errors
           ruff check .
 
       - name: Run tests with coverage
-        run: |
-          # Fails the build if test coverage is below this threshold.
-          pytest -q --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=1
-          coverage report -m > coverage_summary.txt || true
+        run: pytest -q --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=1
 
-      - name: Upload coverage XML report
+      - name: Upload coverage reports
         uses: actions/upload-artifact@v4
-        # 'if: always()' ensures this step runs even if tests fail, for debugging.
         if: always()
         with:
-          name: coverage-xml
+          name: coverage-reports
           path: module_4/coverage.xml
-
-      - name: Upload coverage summary report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-summary
-          path: module_4/coverage_summary.txt
