@@ -13,6 +13,10 @@ documentation for details.
 
 .. toctree::
    :maxdepth: 2
+   :caption: Guides
 
    api/modules
+   guides/overview
+   guides/architecture
+   guides/testing
 
