@@ -25,7 +25,7 @@ jhu_software_concepts/             # GitHub repo
      │   ├─ test_analysis.py       # -m analysis
      │   ├─ test_db.py             # -m db
      │   ├─ test_integration.py    # -m integration
-     │   └─ ...                    # other test files
+     │   └─ ...                    # Other test files
      │  
      ├── .coveragerc               # Configuration for test coverage reporting
      ├── coverage._summary.txt     # Saved terminal coverage summary
@@ -36,7 +36,13 @@ jhu_software_concepts/             # GitHub repo
 ```
 
 ## Features
-- **Testing**: page structure, button behavior (busy-state 409), analysis formatting (two-decimal percentages), DB writes/uniqueness, and end-to-end flows.
-- **Coverage**: enforced to 100% with `pytest` (summary saved to `coverage_summary.txt`).
+- **Testing**: Page structure, button behavior (busy-state 409), analysis formatting (two-decimal percentages), DB writes/uniqueness, and end-to-end flows.
+- **Coverage**: Enforced to 100% with `pytest` (summary saved to `coverage_summary.txt`).
 - **Docs**: Sphinx site (overview/setup, architecture, testing guide, API autodoc) hosted on Read the Docs.
 - **CI**: Automated testing pipeline using GitHub Actions that runs on every push and pull request.
+
+### LLM-generated artifacts
+- Unit tests
+- HTML templates
+- YAML config files (`.yml`/`.yaml`)
+- Sphinx-style Python docstrings
