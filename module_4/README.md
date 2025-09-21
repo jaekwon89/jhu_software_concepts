@@ -32,7 +32,10 @@ jhu_software_concepts/             # GitHub repo
      ├── pytest.ini                # Configuration for pytest, including markers
      ├── requirements.txt          # Runtime/dev deps for module_4
      ├── Screenshots_CI.docx       # GA “green” run screenshot
-     └── README.md                 # This file
+     ├── README.md                 # This file
+     │ 
+     └── .github_copy/workflows/   # A copy of .github/workflows/test.yml for submission
+        └── test_copy.yml
 ```
 
 ## Features
@@ -46,3 +49,4 @@ jhu_software_concepts/             # GitHub repo
 - HTML templates
 - YAML config files (`.yml`/`.yaml`)
 - Sphinx-style Python docstrings
+
