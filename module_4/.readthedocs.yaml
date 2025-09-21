@@ -4,5 +4,5 @@ build:
   tools:
     python: "3.11"
 sphinx:
-  configuration: module_4/docs/conf.py 
+  configuration: module_4/docs/source/conf.py 
 # NOTE: no "python.install" section
