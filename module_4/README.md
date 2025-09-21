@@ -30,7 +30,7 @@ jhu_software_concepts/             # GitHub repo
      ├── .coveragerc               # Configuration for test coverage reporting
      ├── coverage._summary.txt     # Saved terminal coverage summary
      ├── pytest.ini                # Configuration for pytest, including markers
-     ├── requirements.txt          # Runtime/dev deps for module_4
+     ├── requirements.txt          # Runtime/dev deps
      ├── Screenshots_CI.docx       # GA “green” run screenshot
      ├── README.md                 # This file
      │ 
@@ -50,3 +50,17 @@ jhu_software_concepts/             # GitHub repo
 - YAML config files (`.yml`/`.yaml`)
 - Sphinx-style Python docstrings
 
+## Test Coverage Summary
+```text
+Name                    Stmts   Miss  Cover   Missing
+-----------------------------------------------------
+src\__init__.py             0      0   100%
+src\app\__init__.py         9      0   100%
+src\app\db.py               9      0   100%
+src\app\db_helper.py       42      0   100%
+src\app\pipeline.py        29      0   100%
+src\app\query_data.py      63      0   100%
+src\app\routes.py          38      0   100%
+-----------------------------------------------------
+TOTAL                     190      0   100%
+```
