@@ -17,7 +17,9 @@ release = "0.1.0"
 import os, sys
 
 # from docs/source -> ../../src  (so Python can import "app.*")
-sys.path.insert(0, os.path.abspath("../../src"))
+DOCS_DIR = os.path.abspath(os.path.dirname(__file__))          # module_4/docs/source
+PROJECT_ROOT = os.path.abspath(os.path.join(DOCS_DIR, "..", ".."))  # -> module_4
+sys.path.insert(0, PROJECT_ROOT)
 
 extensions = [
     "sphinx.ext.autodoc",
