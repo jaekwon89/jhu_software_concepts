@@ -1,0 +1,71 @@
+# This GitHub Actions workflow tests the Python application in module_4
+# against a real PostgreSQL database.
+
+name: module_4 tests
+
+on:
+  push:
+    paths: ["module_4/**", ".github/workflows/test.yml"]
+  pull_request:
+    paths: ["module_4/**", ".github/workflows/test.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: gradcafe
+        # This port mapping is the key. It exposes the service's port 5432
+        # on the host runner's localhost at the same port.
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres -d gradcafe"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      # Tell the application to connect to localhost. The port mapping in the
+      # services block will forward this to the postgres container.
+      PGHOST: 127.0.0.1
+      # This variable tells conftest.py to enable real database tests.
+      CI: "true"
+      PYTHON_VERSION: "3.12"
+
+    defaults:
+      run:
+        working-directory: module_4
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: module_4/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Run tests with coverage
+        run: pytest -q --cov=src --cov-report=term-missing --cov-fail-under=100 --cov-config=.coveragerc
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: module_4/coverage.xml
+
