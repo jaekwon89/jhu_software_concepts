@@ -4,10 +4,9 @@
 This module turns the GradCafe Analyzer into a tested, documented, CI-backed service. It involves (1) building a Pytest suite for the Flask web and ETL/DB layers, (2) achieving 100% coverage, and (3) publishing developer docs with Sphinx on Read the Docs. The goal is a stable, extensible system that other developers can run, test, and extend.
 
 ## Sphinx Documentation on Read the Doc
-Link:    [Read the Docs site](https://jhu-software-conceptsmodule-4.readthedocs.io/en/latest/)
 Address: https://jhu-software-conceptsmodule-4.readthedocs.io/en/latest/
 
-## Project Structure (Minimized)
+## Project Structure
 ```text
 jhu_software_concepts/             # GitHub repo
 ├─  ...
@@ -39,7 +38,12 @@ jhu_software_concepts/             # GitHub repo
 ```
 
 ## Features
-- **Testing**: Page structure, button behavior (busy-state 409), analysis formatting (two-decimal percentages), DB writes/uniqueness, and end-to-end flows.
+- **Testing**: 
+ 1. Flask App & Page Rendering
+ 2. Buttons & Busy_state Behavior
+ 3. Analysis formatting (two-decimal percentages)
+ 4. DB writes/uniqueness
+ 5. Integration Tests (End-to-end flows)
 - **Coverage**: Enforced to 100% with `pytest` (summary saved to `coverage_summary.txt`).
 - **Docs**: Sphinx site (overview/setup, architecture, testing guide, API autodoc) hosted on Read the Docs.
 - **CI**: Automated testing pipeline using GitHub Actions that runs on every push and pull request.
