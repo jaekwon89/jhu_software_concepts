@@ -39,11 +39,11 @@ jhu_software_concepts/             # GitHub repo
 
 ## Features
 - **Testing**: 
- 1. Flask App & Page Rendering
- 2. Buttons & Busy_state Behavior
- 3. Analysis formatting (two-decimal percentages)
- 4. DB writes/uniqueness
- 5. Integration Tests (End-to-end flows)
+  1. Flask App & Page Rendering
+  2. Buttons & Busy_state Behavior
+  3. Analysis formatting (two-decimal percentages)
+  4. DB writes/uniqueness
+  5. Integration Tests (End-to-end flows)
 - **Coverage**: Enforced to 100% with `pytest` (summary saved to `coverage_summary.txt`).
 - **Docs**: Sphinx site (overview/setup, architecture, testing guide, API autodoc) hosted on Read the Docs.
 - **CI**: Automated testing pipeline using GitHub Actions that runs on every push and pull request.
