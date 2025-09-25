@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.app.clean &#8212; GradCafe Analyzer 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for src.app.clean</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Cleaning pipeline for GradCafe scraped records.</span>
+
+<span class="sd">This module provides functions for:</span>
+
+<span class="sd">* Normalizing status strings (decision + date).</span>
+<span class="sd">* Cleaning individual records.</span>
+<span class="sd">* Running a batch cleaning pipeline with scraping, filtering, and writing to JSON.</span>
+
+<span class="sd">Typical usage</span>
+<span class="sd">-------------</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">   from app.clean import run_clean</span>
+<span class="sd">   n = run_clean(skip_rids=set(), max_records=50)</span>
+<span class="sd">   print(f&quot;Cleaned {n} records&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.scrape</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradCafeScraping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.db_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_json</span><span class="p">,</span> <span class="n">TMP_DIR</span>
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Configuration</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="n">MAX_RECORDS</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># how many to fetch</span>
+<span class="n">REQUEST_DELAY</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># seconds between requests</span>
+<span class="n">OUTPUT_JSON</span> <span class="o">=</span> <span class="s2">&quot;new_applicant_data.json&quot;</span>
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Parsing: Status (decision + date) - date modification</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="n">STATUS_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&#39;&#39;&#39;(?ix)</span>
+<span class="sd">    \b</span>
+<span class="sd">    (Accepted|Rejected|Wait\s*listed|Waitlisted|Interview(?:ed)?)  # decision</span>
+<span class="sd">    (?:\s*on\s*  # &quot; on &quot;</span>
+<span class="sd">        (</span>
+<span class="sd">          \d{1,2}[/]\d{1,2}(?:[/]\d{2,4})?  # dd/mm/yyyy</span>
+<span class="sd">        )</span>
+<span class="sd">    )?</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+<span class="p">)</span>
+
+<span class="c1"># Convert numeric dd/mm/yyyy to &#39;D Mon&#39; (e.g., &#39;01/03/2025&#39; -&gt; &#39;1 Mar&#39;)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_format_day_mon</span><span class="p">(</span><span class="n">date_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a numeric date string to ``D Mon`` format.</span>
+
+<span class="sd">    Example: ``&quot;01/03/2025&quot;`` → ``&quot;1 Mar&quot;``.</span>
+
+<span class="sd">    :param date_str: Raw date string, e.g., ``&quot;01/03/2025&quot;``.</span>
+<span class="sd">    :type date_str: str</span>
+<span class="sd">    :return: Formatted string or the original if parsing fails.</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">date_str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    
+    <span class="n">s</span> <span class="o">=</span> <span class="n">date_str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\s*(\d{1,2})[/](\d{1,2})(?:[/](\d</span><span class="si">{4}</span><span class="s1">))?\s*$&#39;</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span>
+    
+    <span class="n">day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">month_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+    
+    <span class="n">mon_abbrev</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">month_num</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%b&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">mon_abbrev</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="c1"># Return &#39;Decision on D Mon&#39; (e.g., &#39;Accepted on 1 Mar&#39;).</span>
+<div class="viewcode-block" id="status">
+<a class="viewcode-back" href="../../../api/src.app.clean.html#src.app.clean.status">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize a status string (decision + optional date).</span>
+
+<span class="sd">    Example: ``&quot;Accepted on 01/03/2025&quot;`` → ``&quot;Accepted on 1 Mar&quot;``.</span>
+
+<span class="sd">    :param raw: Raw status string.</span>
+<span class="sd">    :type raw: str</span>
+<span class="sd">    :return: Normalized status string.</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">raw</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    
+    <span class="n">m</span> <span class="o">=</span> <span class="n">STATUS_RE</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    
+    <span class="n">decision</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+    <span class="n">date_part</span> <span class="o">=</span> <span class="n">_format_day_mon</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">decision</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">date_part</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">date_part</span> <span class="k">else</span> <span class="n">decision</span></div>
+
+
+<div class="viewcode-block" id="clean_record">
+<a class="viewcode-back" href="../../../api/src.app.clean.html#src.app.clean.clean_record">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">clean_record</span><span class="p">(</span><span class="n">rec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean a single record dictionary.</span>
+
+<span class="sd">    Updates the ``status`` field to a normalized format.</span>
+
+<span class="sd">    :param rec: Raw record dictionary.</span>
+<span class="sd">    :type rec: dict</span>
+<span class="sd">    :return: Cleaned record dictionary.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rec</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>  <span class="c1"># shallow copy</span>
+    <span class="n">rec</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span><span class="p">(</span><span class="n">rec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">rec</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Run to get data if there is any</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<div class="viewcode-block" id="run_clean">
+<a class="viewcode-back" href="../../../api/src.app.clean.html#src.app.clean.run_clean">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_clean</span><span class="p">(</span>
+        <span class="n">skip_rids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">max_records</span><span class="o">=</span><span class="n">MAX_RECORDS</span><span class="p">,</span> 
+        <span class="n">delay</span><span class="o">=</span><span class="n">REQUEST_DELAY</span><span class="p">,</span> 
+        <span class="n">out_filename</span><span class="o">=</span><span class="n">OUTPUT_JSON</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the cleaning pipeline.</span>
+
+<span class="sd">    Steps</span>
+<span class="sd">    -----</span>
+<span class="sd">    1. Scrape records from GradCafe (skipping known IDs).</span>
+<span class="sd">    2. Normalize the ``status`` field.</span>
+<span class="sd">    3. Write results to JSON if not empty.</span>
+
+<span class="sd">    :param skip_rids: Set of result IDs to skip.</span>
+<span class="sd">    :type skip_rids: set[str]</span>
+<span class="sd">    :param max_records: Maximum number of records to fetch.</span>
+<span class="sd">    :type max_records: int</span>
+<span class="sd">    :param delay: Delay (seconds) between requests.</span>
+<span class="sd">    :type delay: float</span>
+<span class="sd">    :param out_filename: Output JSON filename inside TMP_DIR.</span>
+<span class="sd">    :type out_filename: str</span>
+<span class="sd">    :return: Number of records cleaned and written.</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scraper</span> <span class="o">=</span> <span class="n">GradCafeScraping</span><span class="p">()</span>
+    
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">collect_records</span><span class="p">(</span>
+        <span class="n">max_records</span><span class="o">=</span><span class="n">max_records</span><span class="p">,</span> 
+        <span class="n">delay</span><span class="o">=</span><span class="n">delay</span><span class="p">,</span>
+        <span class="n">skip_rids</span><span class="o">=</span><span class="n">skip_rids</span>
+    <span class="p">)</span>
+    <span class="n">cleaned</span> <span class="o">=</span> <span class="p">[</span><span class="n">clean_record</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">cleaned</span><span class="p">:</span>  <span class="c1"># Only write if not empty</span>
+        <span class="n">out_path</span> <span class="o">=</span> <span class="n">TMP_DIR</span> <span class="o">/</span> <span class="n">out_filename</span>
+        <span class="n">write_json</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="n">cleaned</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cleaned</span><span class="p">)</span><span class="si">}</span><span class="s2"> records -&gt; </span><span class="si">{</span><span class="n">out_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">cleaned</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No new data. Nothing written.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Edit the configuration above:</span>
+    <span class="n">run_clean</span><span class="p">(</span>
+        <span class="n">skip_rids</span><span class="o">=</span><span class="nb">set</span><span class="p">(),</span> 
+        <span class="n">max_records</span><span class="o">=</span><span class="n">MAX_RECORDS</span><span class="p">,</span> 
+        <span class="n">delay</span><span class="o">=</span><span class="n">REQUEST_DELAY</span><span class="p">,</span> 
+        <span class="n">out_filename</span><span class="o">=</span><span class="n">OUTPUT_JSON</span>
+    <span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">GradCafe Analyzer</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../app.html">src.app</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Jae Kwon.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,103 @@
+/* Base layout */
+.page-header {
+  border-bottom: 2px solid #000000;
+  background: #def0fb;
+  padding: 10px 4px;
+  margin-bottom: 10px;
+}
+.page-header .brand {
+  color: #2c3e50;
+  font-weight: 1000;
+  font-size: 14px;
+  margin: 1px 0 0 5px;
+}
+
+/* Title */
+.section-title {
+  font-size: 28px;
+  margin: 12px 0 16px;
+  color: #111827;
+}
+
+/* Cards */
+.qa-card {
+  background: #f8f7f7;
+  border: 3px solid #eee;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 14px 10px;
+}
+
+.qa-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.answer {
+  margin: 6px 0 6px;
+  font-style: italic;
+  color: #374151;
+}
+
+.answer span {
+  font-weight: 600;
+  font-style: normal;
+  color: #111827;
+  margin-right: 6px;
+}
+
+.bullets {
+  margin: 6px 0 0 18px;
+  color: #374151;
+}
+
+.bullets li {
+  margin: 4px 0;
+}
+
+/* Font */
+body {
+  font-family: "Lato", sans-serif;
+  font-size: 16px;   /* adjust as needed */
+  line-height: 1.5;  /* improves readability */
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  gap: 1.5rem; /* Adjust space between the two button-explanation pairs */
+}
+
+/* This new rule styles each button-explanation pair */
+.button-group form {
+  display: flex; /* Lays out the button and text side-by-side */
+  align-items: center; /* Vertically aligns them */
+  gap: 0.5rem; /* Sets the space between a button and its text */
+  margin: 0;
+}
+
+/* Optional: Style the help text for clarity */
+.help {
+  font-size: 0.8em;
+  color: #555; /* A slightly darker gray for readability */
+}
+
+
+.toolbar .left { margin: 0; }
+.toolbar .right { margin: 0; }
+.toolbar button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #f7f7f7;
+  cursor: pointer;
+}
+.toolbar button:hover { background: #eee; }
+.toolbar .help { display: block; color: #666; margin-top: 0.25rem; }
+.flashes { list-style: none; padding: 0; }
+.flashes li { margin: 0.25rem 0; }
+.flashes .success { color: #2e7d32; }
+.flashes .warning { color: #b26a00; }
+.flashes .error { color: #b00020; }
