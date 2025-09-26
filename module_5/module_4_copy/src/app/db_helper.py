@@ -11,6 +11,7 @@ It depends on the global PostgreSQL connection pool defined in :mod:`db`.
 
 from pathlib import Path
 import json
+from psycopg import sql
 from ..load_data import data_type as d_type
 from .db import pool, ensure_table
 
@@ -29,22 +30,33 @@ def existing_rids() -> set[str]:
     :rtype: set[str]
     """
     ensure_table()  # Make sure the table exists before SELECTing.
-    urls = []
     rids = set()
+
+    # Separate the SQL statement from the execution.
+    # Use sql.SQL for the template and sql.Identifier for table/column names.
+    query = sql.SQL("SELECT {column} FROM {table} LIMIT %s")
+    # Convert inputs (table/column names) into formatted identifiers.
+    formatted_query = query.format(
+        column=sql.Identifier('url'),
+        table=sql.Identifier('applicants')
+    )
+    # This prevents accidentally fetching an uncontrollably large dataset.
+    query_limit = 10000
 
     # Use a pooled connection/cursor; context managers ensure cleanup.
     with pool.connection() as conn, conn.cursor() as cur:
-        cur.execute("SELECT url FROM applicants")
-        for row in cur.fetchall():
-            urls.append(row[0])
-
+        cur.execute(formatted_query, (query_limit,))
+        urls = [row[0] for row in cur.fetchall()]
     for url in urls:
         if url:
-            rid = url.rsplit("/", 1)[-1]  # Split to get the ID
-            rids.add(rid)
-
+            try:
+                # Split to get the ID
+                rid = url.rsplit("/", 1)[-1]
+                rids.add(rid)
+            except IndexError:
+                # Handle cases where the URL might not have a '/'
+                print(f"Warning: Could not parse rid from URL: {url}")
     return rids
-
 
 # Insert records using a unique URL, ignoring duplicates.
 def insert_records_by_url(records: list[dict], data_type=d_type) -> int:
@@ -80,21 +92,27 @@ def insert_records_by_url(records: list[dict], data_type=d_type) -> int:
         "llm_generated_program",
         "llm_generated_university",
     )
-    placeholders = ", ".join(["%s"] * len(cols))
-    sql = (
-        f"INSERT INTO applicants ({', '.join(cols)}) "
-        f"VALUES ({placeholders}) "
-        "ON CONFLICT (url) DO NOTHING"  # Skip duplicates by URL
+    col_list = sql.SQL(", ").join(sql.Identifier(c) for c in cols)
+    val_list = sql.SQL(", ").join(sql.Placeholder(c) for c in cols)
+
+    stmt = sql.SQL("""
+        INSERT INTO {tbl} ({cols})
+        VALUES ({vals})
+        ON CONFLICT ({conf}) DO NOTHING
+    """).format(
+        tbl=sql.Identifier("applicants"),
+        cols=col_list,
+        vals=val_list,
+        conf=sql.Identifier("url"),
     )
 
     inserted = 0
     with pool.connection() as conn, conn.cursor() as cur:
         for record in records:
-            cur.execute(sql, data_type(record))
-            # rowcount==1 only when the row was inserted
+            cur.execute(stmt, data_type(record))   # dict mapping matches placeholders
             if cur.rowcount == 1:
                 inserted += 1
-        conn.commit()  # one commit for the batch
+        conn.commit()
     return inserted
 
 
