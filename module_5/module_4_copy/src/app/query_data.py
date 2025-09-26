@@ -255,28 +255,27 @@ def degree_counts_2025():
 
 
 # 10. Top 5 programs by entries in 2025
-def top_5_programs():
+def top_5_programs(limit: int | None = 5) -> list[tuple[str, int]]:
     """Return top 5 programs by number of 2025 applicants.
 
     :return: List of (program, count) tuples.
     :rtype: list[tuple[str, int]]
     """
-    with pool.connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT 
-                    llm_generated_program AS program,
-                    COUNT(*) AS num_entries
-                FROM applicants
-                WHERE term LIKE '%2025%'
-                GROUP BY llm_generated_program
-                ORDER BY num_entries DESC
-                LIMIT 5;
-                """
-            )
-            results = cur.fetchall()
-    return results
+    stmt = sql.SQL("""
+        SELECT program, COUNT(*) AS c
+        FROM {tbl}
+        WHERE term LIKE {term}
+        GROUP BY program
+        ORDER BY c DESC
+        LIMIT {lim}
+    """).format(
+        tbl=sql.Identifier("applicants"),
+        term=sql.Literal("%2025%"),
+        lim=_lim(limit),
+    )
+    with pool.connection() as conn, conn.cursor() as cur:
+        cur.execute(stmt)
+        return cur.fetchall()
 
 
 def main():  # pylint: disable=too-many-locals
