@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='analysis.css') }}">
+
+<header class="page-header">
+  <div class="brand">Grad School Cafe Data Analysis</div>
+</header>
+
+<h1 class="section-title">Analysis</h1>
+
+<div class="toolbar">
+  <div class="button-group">
+    <form action="{{ url_for('main.pull_data') }}" method="post">
+      <button type="submit" title="Scrape any NEW GradCafe results and add them to the database.">
+        Pull Data
+      </button>
+      <small class="help">
+        Scrapes only <strong>new</strong> entries and updates the DB.
+      </small>
+    </form>
+    <form action="{{ url_for('main.update_analysis') }}" method="post">
+      <button type="submit" title="Refresh the analysis using the latest data in the database.">
+        Update Analysis
+      </button>
+      <small class="help">
+        Refreshes the page with the latest data.
+      </small>
+    </form>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<section class="qa-card">
+  <h3>How many entries do you have in your database who have applied for {{ term_label }}?</h3>
+  <p class="answer"><span>Answer:</span> {{ data.q1_applicant_count }}</p>
+</section>
+
+<section class="qa-card">
+  <h3>What percentage of entries are from International students (not American or Other)?</h3>
+  <p class="answer">
+    <span>Answer:</span>
+    {{ (data.q2_percent_international)|default(0)|round(2) }}%
+  </p>
+  <ul class="bullets">
+    <li>International: {{ data.q2_counts.international_count }}</li>
+    <li>American: {{ data.q2_counts.us_count }}</li>
+    <li>Other: {{ data.q2_counts.other_count }}</li>
+  </ul>
+</section>
+
+<section class="qa-card">
+  <h3>What is the average GPA, GRE, GRE V, GRE AW of applicants who provided these metrics?</h3>
+  <p class="answer">
+    <span>Answer:</span>
+  </p>
+  <ul class="bullets">
+    <li>Average GPA: {{ (data.q3_avgs.avg_gpa)|default(0)|round(2) }}</li>
+    <li>Average GRE: {{ (data.q3_avgs.avg_gre)|default(0)|round(2) }}</li>
+    <li>Average GRE V: {{ (data.q3_avgs.avg_gre_v)|default(0)|round(2) }}</li>
+    <li>Average GRE AW: {{ (data.q3_avgs.avg_gre_aw)|default(0)|round(2) }}</li>
+  </ul>
+</section>
+
+<section class="qa-card">
+  <h3>What is the average GPA of American students in {{ term_label }}?</h3>
+  <p class="answer"><span>Answer:</span> {{ (data.q4_avg_gpa_us)|default(0)|round(2) }}</p>
+</section>
+
+<section class="qa-card">
+  <h3>What percent of entries for {{ term_label }} are Acceptances?</h3>
+  <p class="answer"><span>Answer:</span> {{ (data.q5_accept_rate)|default(0)|round(2) }}%</p>
+</section>
+
+<section class="qa-card">
+  <h3>What is the average GPA of applicants who applied for {{ term_label }} who are Acceptances?</h3>
+  <p class="answer"><span>Answer:</span> {{ (data.q6_avg_gpa_accept)|default(0)|round(2) }}</p>
+</section>
+
+<section class="qa-card">
+  <h3>How many entries are from applicants who applied to JHU for a master's in Computer Science?</h3>
+  <p class="answer"><span>Answer:</span> {{ data.q7_jhu_ms_cs }}</p>
+</section>
+
+<section class="qa-card">
+  <h3>How many entries from 2025 are acceptances from applicants who applied to Georgetown University for a PhD in Computer Science?</h3>
+  <p class="answer"><span>Answer:</span> {{ data.q8_georgetown_phd_cs }}</p>
+</section>
+
+<section class="qa-card">
+  <h3>Entries by degree in 2025</h3>
+  <ul class="bullets">
+    {% for degree, count in data.q9_degree_counts %}
+      <li><b>{{ degree or 'Unknown' }}</b>: {{ count }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="qa-card">
+  <h3>Top 5 programs by number of applicants</h3>
+  <ul class="bullets">
+    {% for program, count in data.q10_top_programs %}
+      <li><b>{{ program or 'Unknown' }}</b>: {{ count }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% endblock %}
